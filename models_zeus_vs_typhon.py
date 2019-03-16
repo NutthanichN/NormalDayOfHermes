@@ -11,7 +11,7 @@ class Model:
         self.angle = angle
 
 
-class Player(Model):
+class Character(Model):
     def __init__(self, world, x, y):
         super().__init__(world, x, y, 0)
         self.change_x = 0
@@ -35,7 +35,7 @@ class World:
         self.height = height
         self.block_size = block_size
 
-        self.hermes = Player(self, width // 2, height // 2)
+        self.hermes = Character(self, width // 2, height // 2)
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.RIGHT:
