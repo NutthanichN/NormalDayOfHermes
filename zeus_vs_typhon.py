@@ -6,6 +6,8 @@ SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
 SPRITE_SCALE = 0.75
 
+GRAVITY = 1.1
+
 
 class ModelSprite(arcade.Sprite):
     def __init__(self, *args, **kwargs):
@@ -25,27 +27,22 @@ class ModelSprite(arcade.Sprite):
 
 
 class MapDrawer:
-    def __init__(self, map):
+    def __init__(self, map, player):
         self.map = map
         self.width = self.map.width
         self.height = self.map.height
 
+        self.player = player
+
         self.wall_sprite = arcade.Sprite('images/block_20.PNG')
         self.wall_sprite_list = arcade.SpriteList()
 
-    # def draw_sprite(self, sprite, r, c):
-    #     x, y = self.get_sprite_position(r, c)
-    #     sprite.set_position(x, y)
-    #     sprite.draw()
-    #
-    # def draw(self):
-    #     for r in range(self.height):
-    #         for c in range(self.width):
-    #             if self.map.has_wall_at(r, c):
-    #                 self.draw_sprite(self.wall_sprite, r, c)
+        # self.physics_engine = None
 
     def draw(self):
         self.set_wall_list()
+        # self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, self.wall_sprite_list,
+        #                                                      gravity_constant=GRAVITY)
         self.wall_sprite_list.draw()
 
     def set_wall_list(self):
@@ -86,16 +83,16 @@ class CaveWindow(arcade.Window):
         self.world = World(SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE)
         self.hermes_sprite = ModelSprite('images/Hermes/Hermes_right_w1.PNG', model=self.world.hermes,
                                          scale=SPRITE_SCALE)
-        self.map_drawer = MapDrawer(self.world.map1_1)
+        self.map_drawer = MapDrawer(self.world.map1_1, self.hermes_sprite)
 
     def update(self, delta):
         self.world.update(delta)
+        # self.map_drawer.physics_engine.update()
 
     def on_draw(self):
         arcade.start_render()
 
         self.map_drawer.draw()
-        # self.map_drawer.draw()
         self.hermes_sprite.draw()
 
     def on_key_press(self, key, key_modifiers):
