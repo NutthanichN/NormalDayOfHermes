@@ -29,6 +29,34 @@ class Character(Model):
         self.y += self.change_y
 
 
+class Map:
+    def __init__(self, world):
+        self.map1_1 = ['####################',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '#..................#',
+                       '####################']
+
+        self.height = len(self.map1_1)
+        self.width = len(self.map1_1[0])
+
+    def has_wall_at(self, r, c):
+        return self.map1_1[r][c] == '#'
+
+    def has_dot_at(self, r, c):
+        return self.map1_1[r][c] == '.'
+
+
 class World:
     def __init__(self, width, height, block_size):
         self.width = width
@@ -36,6 +64,7 @@ class World:
         self.block_size = block_size
 
         self.hermes = Character(self, width // 2, height // 2)
+        self.map1_1 = Map(self)
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.RIGHT:

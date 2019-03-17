@@ -21,6 +21,32 @@ class ModelSprite(arcade.Sprite):
         super().draw()
 
 
+class MapDrawer:
+    def __init__(self, map):
+        self.map = map
+        self.width = self.map.width
+        self.height = self.map.height
+
+        self.wall_sprite = arcade.Sprite('images/block_40.PNG')
+
+    def draw_sprite(self, sprite, r, c):
+        x, y = self.get_sprite_position(r, c)
+        sprite.set_position(x, y)
+        sprite.draw()
+
+    def draw(self):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.map.has_wall_at(r, c):
+                    self.draw_sprite(self.wall_sprite, r, c)
+
+    def get_sprite_position(self, r, c):
+        r = r - 1
+        x = c * BLOCK_SIZE + (BLOCK_SIZE // 2)
+        y = r * BLOCK_SIZE + (BLOCK_SIZE + (BLOCK_SIZE // 2))
+        return x, y
+
+
 class CaveWindow(arcade.Window):
     def __init__(self, width, height):
         super().__init__(width, height)
@@ -41,6 +67,7 @@ class CaveWindow(arcade.Window):
 
         self.world = World(SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE)
         self.hermes_sprite = ModelSprite('images/Hermes/Hermes_right_w1.PNG', model=self.world.hermes)
+        self.map_drawer = MapDrawer(self.world.map1_1)
 
     def update(self, delta):
         self.world.update(delta)
@@ -48,6 +75,7 @@ class CaveWindow(arcade.Window):
     def on_draw(self):
         arcade.start_render()
 
+        self.map_drawer.draw()
         self.hermes_sprite.draw()
 
     def on_key_press(self, key, key_modifiers):
@@ -55,8 +83,6 @@ class CaveWindow(arcade.Window):
 
     def on_key_release(self, key, key_modifiers):
         self.world.on_key_release(key, key_modifiers)
-
-
 
 
 def main():
