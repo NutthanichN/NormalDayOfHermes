@@ -39,21 +39,32 @@ class MapDrawer:
 
         # self.physics_engine = None
 
-    def draw(self):
-        self.set_wall_list()
-        # self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, self.wall_sprite_list,
-        #                                                      gravity_constant=GRAVITY)
-        self.wall_sprite_list.draw()
+    # def draw(self):
+    #     self.set_wall_list()
+    #     # self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, self.wall_sprite_list,
+    #     #                                                      gravity_constant=GRAVITY)
+    #     self.wall_sprite_list.draw()
+    #
+    # def set_wall_list(self):
+    #     for r in range(self.height):
+    #         for c in range(self.width):
+    #             if self.map.has_wall_at(r, c):
+    #                 x, y = self.get_sprite_position(r, c)
+    #                 wall_sprite = arcade.Sprite('images/block_20.PNG')
+    #                 wall_sprite.center_x = x
+    #                 wall_sprite.center_y = y
+    #                 self.wall_sprite_list.append(wall_sprite)
 
-    def set_wall_list(self):
+    def draw_sprite(self, sprite, r, c):
+        x, y = self.get_sprite_position(r, c)
+        sprite.set_position(x, y)
+        sprite.draw()
+
+    def draw(self):
         for r in range(self.height):
             for c in range(self.width):
                 if self.map.has_wall_at(r, c):
-                    x, y = self.get_sprite_position(r, c)
-                    wall_sprite = arcade.Sprite('images/block_20.PNG')
-                    wall_sprite.center_x = x
-                    wall_sprite.center_y = y
-                    self.wall_sprite_list.append(wall_sprite)
+                    self.draw_sprite(self.wall_sprite, r, c)
 
     def get_sprite_position(self, r, c):
         r = r - 1
