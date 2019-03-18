@@ -1,8 +1,8 @@
 import arcade.key
 
-MOVEMENT_SPEED = 10
-JUMP_SPEED = 23
-GRAVITY = 1.1
+MOVEMENT_VX = 5
+JUMP_VY = 23
+GRAVITY = -1
 
 DIR_STILL = 0
 DIR_UP = 1
@@ -21,6 +21,11 @@ KEY_MAP = {arcade.key.UP: DIR_UP,
            arcade.key.LEFT: DIR_LEFT,
            arcade.key.RIGHT: DIR_RIGHT}
 
+BLOCK_MARGIN = 10
+BLOCK_SIZE = 20
+CHARACTER_MARGIN = 10       # check this value again
+
+
 
 class Model:
     def __init__(self, world, x, y, angle):
@@ -33,9 +38,9 @@ class Model:
 class Character(Model):
     def __init__(self, world, x, y, map, block_size):
         super().__init__(world, x, y, 0)
-        self.change_x = 0
-        self.change_y = 0
-        self.can_jump = False
+        self.vx = 0
+        self.vy = 0
+        self.is_jump = False
 
         self.map = map
         self.block_size = block_size
@@ -46,8 +51,15 @@ class Character(Model):
     def move(self, direction):
         # self.change_x = MOVEMENT_SPEED * DIR_OFFSETS[direction][0]
         # self.change_y = MOVEMENT_SPEED * DIR_OFFSETS[direction][1]
-        self.x += self.change_x
-        self.y += self.change_y
+        self.x += self.vx
+        if self.is_jump:
+            self.y += self.vy
+            self.vy += GRAVITY
+
+    def jump(self):
+        if not self.is_jump:
+            self.is_jump = True
+            self.vy = JUMP_VY
 
     def get_row(self):
         return (self.y - self.block_size) // self.block_size
@@ -122,7 +134,7 @@ class Map:
     def has_wall_at(self, r, c):
         return self.map1_1[r][c] == '#'
 
-    def has_item_at(self, r, c):
+    def has_space_at(self, r, c):
         return self.map1_1[r][c] == '.'
 
 
@@ -136,30 +148,31 @@ class World:
         self.hermes = Character(self, 40, 50, self.map1_1, self.block_size)
 
     def on_key_press(self, key, key_modifiers):
-        if key in KEY_MAP:
-            self.hermes.next_direction = KEY_MAP[key]
+        # if key in KEY_MAP:
+        #     self.hermes.next_direction = KEY_MAP[key]
+        #
+        #     self.hermes.vx = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
+        #     self.hermes.vy = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
 
-            self.hermes.change_x = MOVEMENT_SPEED * DIR_OFFSETS[KEY_MAP[key]][0]
-            self.hermes.change_y = MOVEMENT_SPEED * DIR_OFFSETS[KEY_MAP[key]][1]
-
-        # if key == arcade.key.UP:
-        #     self.hermes.change_y = MOVEMENT_SPEED
-        #     self.hermes.direction = DIR_UP
+        if key == arcade.key.UP:
+            self.hermes.jump()
+            # self.hermes.change_y = MOVEMENT_VX
+            self.hermes.direction = DIR_UP
         # elif key == arcade.key.DOWN:
         #     self.hermes.change_y = -MOVEMENT_SPEED
         #     self.hermes.direction = DIR_DOWN
-        # elif key == arcade.key.RIGHT:
-        #     self.hermes.change_x = MOVEMENT_SPEED
-        #     self.hermes.direction = DIR_RIGHT
-        # elif key == arcade.key.LEFT:
-        #     self.hermes.change_x = -MOVEMENT_SPEED
-        #     self.hermes.direction = DIR_LEFT
+        elif key == arcade.key.RIGHT:
+            self.hermes.vx = MOVEMENT_VX
+            self.hermes.direction = DIR_RIGHT
+        elif key == arcade.key.LEFT:
+            self.hermes.vx = -MOVEMENT_VX
+            self.hermes.direction = DIR_LEFT
 
     def on_key_release(self, key, key_modifiers):
         if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.hermes.change_y = 0
+            self.hermes.vy = 0
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
-            self.hermes.change_x = 0
+            self.hermes.vx = 0
 
     def update(self, delta):
         self.hermes.update(delta)
