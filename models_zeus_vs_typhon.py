@@ -1,7 +1,7 @@
 import arcade.key
 
 MOVEMENT_VX = 5
-JUMP_VY = 23
+JUMP_VY = 20
 GRAVITY = -1
 
 DIR_STILL = 0
@@ -41,7 +41,6 @@ class Character(Model):
         self.vx = 0
         self.vy = 0
         self.is_jump = False
-        self.falling = False
 
         self.map = map
         self.block_size = block_size
@@ -54,19 +53,39 @@ class Character(Model):
         # self.change_y = MOVEMENT_SPEED * DIR_OFFSETS[direction][1]
         self.x += self.vx
 
-        if self.falling:
-            self.y += self.vy
-            self.vy += GRAVITY
+        # if self.falling or self.is_jump:
+        #     self.y += self.vy
+        #     self.vy += GRAVITY
+        #     if self.is_falling_on_platform():
+        #         self.vy = 0
+        #         self.set_on_platform()
+
+        # if not self.is_on_platform():
+        #     self.y += self.vy
+        #     self.vy += GRAVITY
+        #     if self.is_falling_on_platform():
+        #         self.vy = 0
+        #         self.set_on_platform()
 
         if self.is_jump:
             self.y += self.vy
             self.vy += GRAVITY
-            if self.is_on_platform():
-                self.vy = 0
-                self.set_on_platform()
+
+        if not self.is_on_platform():
+            self.y += self.vy
+            self.vy += GRAVITY
+
+        if self.is_falling_on_platform():
+            self.vy = 0
+            self.set_on_platform()
+
+    # def jump(self):
+    #     if not self.is_jump:
+    #         self.is_jump = True
+    #         self.vy = JUMP_VY
 
     def jump(self):
-        if not self.is_jump:
+        if self.is_on_platform():
             self.is_jump = True
             self.vy = JUMP_VY
 
@@ -75,11 +94,6 @@ class Character(Model):
 
     def get_col_at(self, x):
         return x // self.block_size
-
-    # def check_walls(self, direction):
-    #     new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
-    #     new_c = self.get_col_at(self.x) + DIR_OFFSETS[direction][0]
-    #     return not self.map.has_wall_at(new_r, new_c)
 
     def check_walls(self, direction):
         new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
@@ -92,21 +106,6 @@ class Character(Model):
     def bottom_y(self):
         pass
 
-    # def update(self, delta):
-    #     # if self.x > self.world.width - BLOCK_SIZE or self.x < BLOCK_SIZE:
-    #     #     self.x += BLOCK_SIZE
-    #     #     # self.vx = 0
-    #     # elif self.y > self.world.height - BLOCK_SIZE * 4 or self.y < BLOCK_SIZE:
-    #     #     self.y += BLOCK_SIZE
-    #     #     # self.vy = 0
-    #
-    #     if self.check_walls(self.next_direction):
-    #         self.direction = self.next_direction
-    #     else:
-    #         self.direction = DIR_STILL
-    #
-    #     self.move(self.direction)
-
     def update(self, delta):
         self.direction = self.next_direction
 
@@ -115,17 +114,34 @@ class Character(Model):
 
     def set_on_platform(self):
         self.is_jump = False
-        self.y += BLOCK_SIZE + BLOCK_MARGIN
+
+    # def is_on_platform(self):
+    #     p_r = self.get_row_at(self.y + CHARACTER_MARGIN_Y)
+    #     p_c = self.get_col_at(self.x)
+    #     if self.map.has_wall_at(p_r, p_c):
+    #         self.falling = False
+    #         return True
+    #     else:
+    #         self.falling = True
+    #         return False
+
+    def is_falling_on_platform(self):
+        new_r = self.get_row_at(self.y) + DIR_OFFSETS[DIR_DOWN][1]
+        c = self.get_col_at(self.x)
+        return self.map.has_wall_at(new_r, c)
 
     def is_on_platform(self):
-        p_r = self.get_row_at(self.y + CHARACTER_MARGIN_Y)
-        p_c = self.get_col_at(self.x)
-        if self.map.has_wall_at(p_r, p_c):
-            self.falling = False
-            return True
-        else:
-            self.falling = True
-            return False
+        new_r = self.get_row_at(self.y) + DIR_OFFSETS[DIR_DOWN][1]
+        c = self.get_col_at(self.x)
+        # make sure there is platform at lower row
+        if self.map.has_wall_at(new_r, c):
+            x, new_y = self.map.r_c_to_x_y(new_r, c)
+
+            if x - BLOCK_MARGIN <= x <= x + BLOCK_MARGIN:
+                return True
+
+        self.falling = True
+        return False
 
 
 class Platform:
