@@ -46,7 +46,8 @@ class CaveWindow(arcade.Window):
         """
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
-        # self.hermes_sprite = MainCharacter('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
+        # self.hermes_sprite = MainCharacter('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2,
+        #                                    SCREEN_HEIGHT // 2,
         #                                    SPRITE_SCALE)
 
         self.hermes_sprite = MainCharacter(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SPRITE_SCALE)

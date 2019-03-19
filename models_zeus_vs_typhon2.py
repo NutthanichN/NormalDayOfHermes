@@ -1,24 +1,24 @@
 import arcade
 import arcade.key
 
-DIR_STILL = 0
-DIR_UP = 1
-DIR_RIGHT = 2
-DIR_DOWN = 3
-DIR_LEFT = 4
-
-DIR_OFFSETS = {DIR_STILL: (0, 0),
-               DIR_UP: (0, 1),
-               DIR_RIGHT: (1, 0),
-               DIR_DOWN: (0, -1),
-               DIR_LEFT: (-1, 0)}
-
-KEY_MAP = {arcade.key.UP: DIR_UP,
-           arcade.key.DOWN: DIR_DOWN,
-           arcade.key.LEFT: DIR_LEFT,
-           arcade.key.RIGHT: DIR_RIGHT}
-
-BLOCK_SIZE = 20
+# DIR_STILL = 0
+# DIR_UP = 1
+# DIR_RIGHT = 2
+# DIR_DOWN = 3
+# DIR_LEFT = 4
+#
+# DIR_OFFSETS = {DIR_STILL: (0, 0),
+#                DIR_UP: (0, 1),
+#                DIR_RIGHT: (1, 0),
+#                DIR_DOWN: (0, -1),
+#                DIR_LEFT: (-1, 0)}
+#
+# KEY_MAP = {arcade.key.UP: DIR_UP,
+#            arcade.key.DOWN: DIR_DOWN,
+#            arcade.key.LEFT: DIR_LEFT,
+#            arcade.key.RIGHT: DIR_RIGHT}
+#
+# BLOCK_SIZE = 20
 
 TEXTURE_RIGHT = 0
 TEXTURE_LEFT = 1
