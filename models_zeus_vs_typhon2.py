@@ -46,44 +46,45 @@ class Character(arcade.Sprite):
 
 
 class Map:
-    def __init__(self):
-        self.map1_1 = ['########################################',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#..............==========..............#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '#......................................#',
-                       '########################################']
+    def __init__(self, map_filename):
+        # self.map1_1 = ['########################################',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#..............==========..............#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '#......................................#',
+        #                '########################################']
 
-        self.height = len(self.map1_1)
-        self.width = len(self.map1_1[0])
+        self.map = open(map_filename).read().splitlines()
+        self.height = len(self.map)
+        self.width = len(self.map[0])
 
     def has_wall_at(self, r, c):
-        return self.map1_1[r][c] == '#'
+        return self.map[r][c] == '#'
 
     def has_space_at(self, r, c):
-        return self.map1_1[r][c] == '.'
+        return self.map[r][c] == '.'
 
     def has_platform_at(self, r, c):
-        return self.map1_1[r][c] == '='
+        return self.map[r][c] == '='
 
     def r_c_to_x_y(self, r, c):
         x = c * BLOCK_SIZE + (BLOCK_SIZE // 2)
@@ -91,39 +92,39 @@ class Map:
         return x, y
 
 
-class MapDrawer:
-    def __init__(self, map, player, filename):
-        self.map = map
-        self.width = self.map.width
-        self.height = self.map.height
-
-        self.player = player
+class MapDrawer(Map):
+    def __init__(self, map_filename, wall_pic, platform_pic, item_pic=''):
+        super().__init__(map_filename)
 
         # set wall sprite list
         self.wall_sprite_list = arcade.SpriteList()
-        self.set_wall_sprite_list(filename)
+        self.set_wall_sprite_list(wall_pic)
 
         # set platform sprite list
         self.platform_sprite_list = arcade.SpriteList()
-        self.set_platform_sprite_list(filename)
+        self.set_platform_sprite_list(platform_pic)
 
-    def set_sprite_list(self, filename, lst, func):
+        # set item sprite list
+        self.item_sprite_list = arcade.SpriteList()
+        self.set_item_sprite_list(item_pic)
+
+    def set_sprite_list(self, pic_filename, lst, func):
         for r in range(self.height):
             for c in range(self.width):
                 if func(r, c):
                     x, y = self.get_sprite_position(r, c)
-                    wall_sprite = arcade.Sprite(filename)
+                    wall_sprite = arcade.Sprite(pic_filename)
                     wall_sprite.center_x = x
                     wall_sprite.center_y = y
                     lst.append(wall_sprite)
 
-    def set_wall_sprite_list(self, filename):
-        self.set_sprite_list(filename, self.wall_sprite_list, self.map.has_wall_at)
+    def set_wall_sprite_list(self, wall_pic):
+        self.set_sprite_list(wall_pic, self.wall_sprite_list, self.has_wall_at)
 
-    def set_platform_sprite_list(self, filename):
-        self.set_sprite_list(filename, self.platform_sprite_list, self.map.has_platform_at)
+    def set_platform_sprite_list(self, platform_pic):
+        self.set_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at)
 
-    def set_item_sprite_list(self, filename):
+    def set_item_sprite_list(self, item_pic):
         pass
 
     def get_sprite_position(self, r, c):
