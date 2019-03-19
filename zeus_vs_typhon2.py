@@ -1,12 +1,12 @@
 import arcade
-from models_zeus_vs_typhon2 import Character, Map, MapDrawer
+from models_zeus_vs_typhon2 import MainCharacter, Map, MapDrawer
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
 SPRITE_SCALE = 0.75
 
-MOVEMENT_VX = 5
+MOVEMENT_VX = 1
 JUMP_VY = 10
 GRAVITY = 1
 
@@ -46,8 +46,30 @@ class CaveWindow(arcade.Window):
         """
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
-        self.hermes_sprite = Character('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
-                                       SPRITE_SCALE)
+        # self.hermes_sprite = MainCharacter('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
+        #                                    SPRITE_SCALE)
+
+        self.hermes_sprite = MainCharacter(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SPRITE_SCALE)
+        self.hermes_sprite.init_stand_right('images/Hermes/Hermes_right_55x86_w1.png')
+        self.hermes_sprite.init_stand_left('images/Hermes/Hermes_right_55x86_w1.png')
+
+        self.hermes_sprite.init_walk_right('images/Hermes/Hermes_right_61x86_w2.png',
+                                           'images/Hermes/Hermes_right_64x86_w3.png',
+                                           'images/Hermes/Hermes_right_61x86_w4.png',
+                                           'images/Hermes/Hermes_right_55x86_w5.png',
+                                           'images/Hermes/Hermes_right_55x86_w6.png',
+                                           'images/Hermes/Hermes_right_51x86_w7.png',
+                                           'images/Hermes/Hermes_right_55x86_w8.png',
+                                           'images/Hermes/Hermes_right_55x86_w9.png')
+
+        self.hermes_sprite.init_walk_left('images/Hermes/Hermes_right_61x86_w2.png',
+                                          'images/Hermes/Hermes_right_64x86_w3.png',
+                                          'images/Hermes/Hermes_right_61x86_w4.png',
+                                          'images/Hermes/Hermes_right_55x86_w5.png',
+                                          'images/Hermes/Hermes_right_55x86_w6.png',
+                                          'images/Hermes/Hermes_right_51x86_w7.png',
+                                          'images/Hermes/Hermes_right_55x86_w8.png',
+                                          'images/Hermes/Hermes_right_55x86_w9.png')
 
         self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG')
         self.physics_engine_platform = arcade.PhysicsEnginePlatformer(self.hermes_sprite,
@@ -58,6 +80,7 @@ class CaveWindow(arcade.Window):
 
     def update(self, delta):
         self.hermes_sprite.update()
+        self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
         self.physics_engine_platform.update()
 

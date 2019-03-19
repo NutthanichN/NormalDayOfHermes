@@ -33,18 +33,39 @@ class Model(arcade.Sprite):
         self.change_y = 0
 
 
-class Character(Model):
-    def __init__(self, filename, x, y, scale):
-        super().__init__(filename, x, y, scale)
+class MainCharacter(arcade.AnimatedWalkingSprite):
+    # def __init__(self, filename, x, y, scale):
+    #     super().__init__(filename, x, y, scale)
+    #
+    #     # set texture
+    #     self.textures = []
+    #     texture_right = arcade.load_texture(filename)
+    #     self.textures.append(texture_right)
+    #     texture_left = arcade.load_texture(filename, mirrored=True)
+    #     self.textures.append(texture_left)
+    #
+    #     self.set_texture(TEXTURE_RIGHT)
 
-        # set texture
-        self.textures = []
-        texture_right = arcade.load_texture(filename)
-        self.textures.append(texture_right)
-        texture_left = arcade.load_texture(filename, mirrored=True)
-        self.textures.append(texture_left)
+    def __init__(self, x, y, scale):
+        super().__init__(scale, center_x=x, center_y=y)
+        self.stand_right_textures = []
+        self.stand_left_textures = []
+        self.walk_right_textures = []
+        self.walk_left_textures = []
 
-        self.set_texture(TEXTURE_RIGHT)
+    def init_walk_left(self, *args):
+        for i in args:
+            self.walk_left_textures.append(arcade.load_texture(i, mirrored=True))
+
+    def init_walk_right(self, *args):
+        for i in args:
+            self.walk_right_textures.append(arcade.load_texture(i))
+
+    def init_stand_right(self, filename):
+        self.stand_right_textures.append(arcade.load_texture(filename))
+
+    def init_stand_left(self, filename):
+        self.stand_left_textures.append(arcade.load_texture(filename, mirrored=True))
 
     def move(self):
         self.center_x += self.change_x
@@ -52,10 +73,10 @@ class Character(Model):
 
     def update(self):
         self.move()
-        if self.change_x < 0:
-            self.set_texture(TEXTURE_LEFT)
-        elif self.change_x > 0:
-            self.set_texture(TEXTURE_RIGHT)
+        # if self.change_x < 0:
+        #     self.set_texture(TEXTURE_LEFT)
+        # elif self.change_x > 0:
+        #     self.set_texture(TEXTURE_RIGHT)
 
 
 class Map:
