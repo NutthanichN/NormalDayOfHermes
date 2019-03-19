@@ -95,9 +95,15 @@ class Character(Model):
     def get_col_at(self, x):
         return x // self.block_size
 
+    def cal_r_c(self, dir_r=0, dir_c=0):
+        r = self.get_row_at(self.y) + dir_r
+        c = self.get_col_at(self.x) + dir_c
+        return r, c
+
     def check_walls(self, direction):
-        new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
-        new_c = self.get_col_at(self.x) + DIR_OFFSETS[direction][0]
+        # new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
+        # new_c = self.get_col_at(self.x) + DIR_OFFSETS[direction][0]
+        new_r, new_c = self.cal_r_c(dir_r=DIR_OFFSETS[direction][1], dir_c=DIR_OFFSETS[direction][0])
         return self.map.has_wall_at(new_r, new_c)
 
     def check_items(self):
@@ -115,32 +121,23 @@ class Character(Model):
     def set_on_platform(self):
         self.is_jump = False
 
-    # def is_on_platform(self):
-    #     p_r = self.get_row_at(self.y + CHARACTER_MARGIN_Y)
-    #     p_c = self.get_col_at(self.x)
-    #     if self.map.has_wall_at(p_r, p_c):
-    #         self.falling = False
-    #         return True
-    #     else:
-    #         self.falling = True
-    #         return False
-
     def is_falling_on_platform(self):
-        new_r = self.get_row_at(self.y) + DIR_OFFSETS[DIR_DOWN][1]
-        c = self.get_col_at(self.x)
+        # new_r = self.get_row_at(self.y) + DIR_OFFSETS[DIR_DOWN][1]
+        # c = self.get_col_at(self.x)
+        new_r, c = self.cal_r_c(dir_r=DIR_OFFSETS[DIR_DOWN][1])
         return self.map.has_wall_at(new_r, c)
 
     def is_on_platform(self):
-        new_r = self.get_row_at(self.y) + DIR_OFFSETS[DIR_DOWN][1]
-        c = self.get_col_at(self.x)
+        # new_r, new_c = self.cal_r_c(DIR_DOWN)
+        # c = self.get_col_at(self.x)
+        new_r, c = self.cal_r_c(dir_r=DIR_OFFSETS[DIR_DOWN][1])
         # make sure there is platform at lower row
         if self.map.has_wall_at(new_r, c):
             x, new_y = self.map.r_c_to_x_y(new_r, c)
 
-            if x - BLOCK_MARGIN <= x <= x + BLOCK_MARGIN:
+            if x - BLOCK_MARGIN < x < x + BLOCK_MARGIN:
                 return True
 
-        self.falling = True
         return False
 
 
