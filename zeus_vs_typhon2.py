@@ -46,20 +46,20 @@ class CaveWindow(arcade.Window):
         """
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
-        self.hermes_sprite = Character('images/Hermes/Hermes_right_w1.PNG', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
+        self.hermes_sprite = Character('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2,
                                        SPRITE_SCALE)
 
         self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG')
-        # self.physics_engine_platform = arcade.PhysicsEnginePlatformer(self.hermes_sprite,
-        #                                                               self.map1_1.platform_sprite_list,
-        #                                                               GRAVITY)
+        self.physics_engine_platform = arcade.PhysicsEnginePlatformer(self.hermes_sprite,
+                                                                      self.map1_1.platform_sprite_list,
+                                                                      GRAVITY)
         self.physics_engine_wall = arcade.PhysicsEngineSimple(self.hermes_sprite,
                                                               self.map1_1.wall_sprite_list,)
 
     def update(self, delta):
         self.hermes_sprite.update()
         self.physics_engine_wall.update()
-        # self.physics_engine_platform.update()
+        self.physics_engine_platform.update()
 
     def on_draw(self):
         arcade.start_render()
@@ -71,14 +71,25 @@ class CaveWindow(arcade.Window):
     def on_key_press(self, key, key_modifiers):
         if key in KEY_MAP:
             self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
-            self.hermes_sprite.change_y = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
-            # if key == arcade.key.UP:
-            #     if self.physics_engine_platform.can_jump():
-            #         self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+            # self.hermes_sprite.change_y = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
+            if key == arcade.key.UP:
+                if self.physics_engine_platform.can_jump():
+                    self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+        # print(self.hermes_sprite.change_x)
+
+        # not quite work
+        # else:
+        #     if key == arcade.key.UP and key == arcade.key.RIGHT:
+        #         self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[DIR_RIGHT][0]
+        #     elif key == arcade.key.UP and key == arcade.key.LEFT:
+        #         self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[DIR_LEFT][1]
+        #
+        #     if self.physics_engine_platform.can_jump():
+        #         self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
 
     def on_key_release(self, key, key_modifiers):
-        if key == arcade.key.UP or key == arcade.key.DOWN:
-            self.hermes_sprite.change_y = 0
+        # if key == arcade.key.UP or key == arcade.key.DOWN:
+        #     self.hermes_sprite.change_y = 0
         if key == arcade.key.LEFT or key == arcade.key.RIGHT:
             self.hermes_sprite.change_x = 0
 

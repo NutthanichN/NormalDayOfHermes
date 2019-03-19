@@ -1,10 +1,6 @@
 import arcade
 import arcade.key
 
-MOVEMENT_VX = 5
-JUMP_VY = 20
-GRAVITY = -1
-
 DIR_STILL = 0
 DIR_UP = 1
 DIR_RIGHT = 2
@@ -22,12 +18,13 @@ KEY_MAP = {arcade.key.UP: DIR_UP,
            arcade.key.LEFT: DIR_LEFT,
            arcade.key.RIGHT: DIR_RIGHT}
 
-BLOCK_MARGIN = 10
 BLOCK_SIZE = 20
-CHARACTER_MARGIN_Y = 10       # check this value again
+
+TEXTURE_RIGHT = 0
+TEXTURE_LEFT = 1
 
 
-class Character(arcade.Sprite):
+class Model(arcade.Sprite):
     def __init__(self, filename, x, y, scale):
         super().__init__(filename, scale=scale)
         self.center_x = x
@@ -35,7 +32,19 @@ class Character(arcade.Sprite):
         self.change_x = 0
         self.change_y = 0
 
-        self.direction = DIR_STILL
+
+class Character(Model):
+    def __init__(self, filename, x, y, scale):
+        super().__init__(filename, x, y, scale)
+
+        # set texture
+        self.textures = []
+        texture_right = arcade.load_texture(filename)
+        self.textures.append(texture_right)
+        texture_left = arcade.load_texture(filename, mirrored=True)
+        self.textures.append(texture_left)
+
+        self.set_texture(TEXTURE_RIGHT)
 
     def move(self):
         self.center_x += self.change_x
@@ -43,36 +52,14 @@ class Character(arcade.Sprite):
 
     def update(self):
         self.move()
+        if self.change_x < 0:
+            self.set_texture(TEXTURE_LEFT)
+        elif self.change_x > 0:
+            self.set_texture(TEXTURE_RIGHT)
 
 
 class Map:
     def __init__(self, map_filename):
-        # self.map1_1 = ['########################################',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#..............==========..............#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '#......................................#',
-        #                '########################################']
-
         self.map = open(map_filename).read().splitlines()
         self.height = len(self.map)
         self.width = len(self.map[0])
@@ -86,10 +73,8 @@ class Map:
     def has_platform_at(self, r, c):
         return self.map[r][c] == '='
 
-    def r_c_to_x_y(self, r, c):
-        x = c * BLOCK_SIZE + (BLOCK_SIZE // 2)
-        y = (r * BLOCK_SIZE) + BLOCK_SIZE + (BLOCK_SIZE // 2)
-        return x, y
+    def has_item_at(self, r, c):
+        pass
 
 
 class MapDrawer(Map):
