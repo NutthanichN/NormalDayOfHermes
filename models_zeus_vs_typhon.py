@@ -23,7 +23,7 @@ KEY_MAP = {arcade.key.UP: DIR_UP,
 
 BLOCK_MARGIN = 10
 BLOCK_SIZE = 20
-CHARACTER_MARGIN = 10       # check this value again
+CHARACTER_MARGIN_Y = 10       # check this value again
 
 
 
@@ -41,6 +41,7 @@ class Character(Model):
         self.vx = 0
         self.vy = 0
         self.is_jump = False
+        self.falling = False
 
         self.map = map
         self.block_size = block_size
@@ -52,39 +53,88 @@ class Character(Model):
         # self.change_x = MOVEMENT_SPEED * DIR_OFFSETS[direction][0]
         # self.change_y = MOVEMENT_SPEED * DIR_OFFSETS[direction][1]
         self.x += self.vx
+
+        if self.falling:
+            self.y += self.vy
+            self.vy += GRAVITY
+
         if self.is_jump:
             self.y += self.vy
             self.vy += GRAVITY
+            if self.is_on_platform():
+                self.vy = 0
+                self.set_on_platform()
 
     def jump(self):
         if not self.is_jump:
             self.is_jump = True
             self.vy = JUMP_VY
 
-    def get_row(self):
-        return (self.y - self.block_size) // self.block_size
+    def get_row_at(self, y):
+        return (y - self.block_size) // self.block_size
 
-    def get_col(self):
-        return self.x // self.block_size
+    def get_col_at(self, x):
+        return x // self.block_size
+
+    # def check_walls(self, direction):
+    #     new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
+    #     new_c = self.get_col_at(self.x) + DIR_OFFSETS[direction][0]
+    #     return not self.map.has_wall_at(new_r, new_c)
 
     def check_walls(self, direction):
-        new_r = self.get_row() + DIR_OFFSETS[direction][1]
-        new_c = self.get_col() + DIR_OFFSETS[direction][0]
-        return not self.map.has_wall_at(new_r, new_c)
+        new_r = self.get_row_at(self.y) + DIR_OFFSETS[direction][1]
+        new_c = self.get_col_at(self.x) + DIR_OFFSETS[direction][0]
+        return self.map.has_wall_at(new_r, new_c)
 
     def check_items(self):
         pass
 
-    def update(self, delta):
-        # if self.x > self.world.width or self.x < 0:
-        #     self.x = 0
-        #     # self.change_x = 0
-        # elif self.y > self.world.height or self.y < 0:
-        #     self.y = 0
-        #     # self.change_y = 0
+    def bottom_y(self):
+        pass
 
+    # def update(self, delta):
+    #     # if self.x > self.world.width - BLOCK_SIZE or self.x < BLOCK_SIZE:
+    #     #     self.x += BLOCK_SIZE
+    #     #     # self.vx = 0
+    #     # elif self.y > self.world.height - BLOCK_SIZE * 4 or self.y < BLOCK_SIZE:
+    #     #     self.y += BLOCK_SIZE
+    #     #     # self.vy = 0
+    #
+    #     if self.check_walls(self.next_direction):
+    #         self.direction = self.next_direction
+    #     else:
+    #         self.direction = DIR_STILL
+    #
+    #     self.move(self.direction)
+
+    def update(self, delta):
         self.direction = self.next_direction
-        self.move(self.direction)
+
+        if not self.check_walls(self.next_direction):
+            self.move(self.direction)
+
+    def set_on_platform(self):
+        self.is_jump = False
+        self.y += BLOCK_SIZE + BLOCK_MARGIN
+
+    def is_on_platform(self):
+        p_r = self.get_row_at(self.y + CHARACTER_MARGIN_Y)
+        p_c = self.get_col_at(self.x)
+        if self.map.has_wall_at(p_r, p_c):
+            self.falling = False
+            return True
+        else:
+            self.falling = True
+            return False
+
+
+class Platform:
+    def __init__(self, world, x, y, width, height):
+        self.world = world
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 
 class Map:
@@ -137,6 +187,11 @@ class Map:
     def has_space_at(self, r, c):
         return self.map1_1[r][c] == '.'
 
+    def r_c_to_x_y(self, r, c):
+        x = c * BLOCK_SIZE + (BLOCK_SIZE // 2)
+        y = (r * BLOCK_SIZE) + BLOCK_SIZE + (BLOCK_SIZE // 2)
+        return x, y
+
 
 class World:
     def __init__(self, width, height, block_size):
@@ -148,25 +203,28 @@ class World:
         self.hermes = Character(self, 40, 50, self.map1_1, self.block_size)
 
     def on_key_press(self, key, key_modifiers):
-        # if key in KEY_MAP:
-        #     self.hermes.next_direction = KEY_MAP[key]
-        #
-        #     self.hermes.vx = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
-        #     self.hermes.vy = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
+        if key in KEY_MAP:
+            self.hermes.next_direction = KEY_MAP[key]
 
-        if key == arcade.key.UP:
-            self.hermes.jump()
-            # self.hermes.change_y = MOVEMENT_VX
-            self.hermes.direction = DIR_UP
-        # elif key == arcade.key.DOWN:
-        #     self.hermes.change_y = -MOVEMENT_SPEED
-        #     self.hermes.direction = DIR_DOWN
-        elif key == arcade.key.RIGHT:
-            self.hermes.vx = MOVEMENT_VX
-            self.hermes.direction = DIR_RIGHT
-        elif key == arcade.key.LEFT:
-            self.hermes.vx = -MOVEMENT_VX
-            self.hermes.direction = DIR_LEFT
+            self.hermes.vx = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
+
+            if key == arcade.key.UP:
+                self.hermes.jump()
+            # self.hermes.vy = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
+
+        # if key == arcade.key.UP:
+        #     self.hermes.jump()
+        #     # self.hermes.change_y = MOVEMENT_VX
+        #     self.hermes.direction = DIR_UP
+        # # elif key == arcade.key.DOWN:
+        # #     self.hermes.change_y = -MOVEMENT_SPEED
+        # #     self.hermes.direction = DIR_DOWN
+        # elif key == arcade.key.RIGHT:
+        #     self.hermes.vx = MOVEMENT_VX
+        #     self.hermes.direction = DIR_RIGHT
+        # elif key == arcade.key.LEFT:
+        #     self.hermes.vx = -MOVEMENT_VX
+        #     self.hermes.direction = DIR_LEFT
 
     def on_key_release(self, key, key_modifiers):
         if key == arcade.key.UP or key == arcade.key.DOWN:
