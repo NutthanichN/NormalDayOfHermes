@@ -1,5 +1,6 @@
 import arcade
-from models_zeus_vs_typhon2 import MainCharacter, Map, MapDrawer
+from models_zeus_vs_typhon2 import MainCharacter, MapDrawer
+import my_physics
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -76,13 +77,20 @@ class CaveWindow(arcade.Window):
         self.physics_engine_platform = arcade.PhysicsEnginePlatformer(self.hermes_sprite,
                                                                       self.map1_1.platform_sprite_list,
                                                                       GRAVITY)
-        self.physics_engine_wall = arcade.PhysicsEngineSimple(self.hermes_sprite,
-                                                              self.map1_1.wall_sprite_list,)
+        # self.physics_engine_wall = arcade.PhysicsEngineSimple(self.hermes_sprite,
+        #                                                       self.map1_1.wall_sprite_list,)
+
+        self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
+                                                                  self.map1_1.wall_sprite_list,)
 
     def update(self, delta):
-        self.hermes_sprite.update()
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
+
+        # print('--------------------------------')
+        # print(self.hermes_sprite.change_x, 'change x')
+        # print(self.hermes_sprite.position)
+
         self.physics_engine_platform.update()
 
     def on_draw(self):
@@ -96,9 +104,18 @@ class CaveWindow(arcade.Window):
         if key in KEY_MAP:
             self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
             # self.hermes_sprite.change_y = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
+
+            if key == arcade.key.RIGHT or key == arcade.key.LEFT:
+                self.hermes_sprite.next_direction_x = KEY_MAP[key]
+
             if key == arcade.key.UP:
                 if self.physics_engine_platform.can_jump():
                     self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+
+        # print(self.map1_1.wall_sprite_list[1].left)
+        # print(self.map1_1.wall_sprite_list[1].bottom)
+
+        # print(self.hermes_sprite.width)
         # print(self.hermes_sprite.change_x)
 
         # not quite work

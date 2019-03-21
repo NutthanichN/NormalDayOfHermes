@@ -1,27 +1,16 @@
 import arcade
 import arcade.key
 
-# DIR_STILL = 0
-# DIR_UP = 1
-# DIR_RIGHT = 2
-# DIR_DOWN = 3
-# DIR_LEFT = 4
-#
-# DIR_OFFSETS = {DIR_STILL: (0, 0),
-#                DIR_UP: (0, 1),
-#                DIR_RIGHT: (1, 0),
-#                DIR_DOWN: (0, -1),
-#                DIR_LEFT: (-1, 0)}
-#
-# KEY_MAP = {arcade.key.UP: DIR_UP,
-#            arcade.key.DOWN: DIR_DOWN,
-#            arcade.key.LEFT: DIR_LEFT,
-#            arcade.key.RIGHT: DIR_RIGHT}
-#
-# BLOCK_SIZE = 20
+BLOCK_SIZE = 20
 
 TEXTURE_RIGHT = 0
 TEXTURE_LEFT = 1
+
+DIR_STILL = 0
+DIR_UP = 1
+DIR_RIGHT = 2
+DIR_DOWN = 3
+DIR_LEFT = 4
 
 
 class Model(arcade.Sprite):
@@ -53,6 +42,27 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.walk_right_textures = []
         self.walk_left_textures = []
 
+        self.direction_x = self.check_direction_x()
+        self.direction_y = self.check_direction_y()
+        self.next_direction_x = DIR_STILL
+        self.next_direction_y = DIR_STILL
+
+    def check_direction_x(self):
+        if self.change_x == 0:
+            return DIR_STILL
+        elif self.change_x > 0:
+            return DIR_RIGHT
+        elif self.change_x < 0:
+            return DIR_LEFT
+
+    def check_direction_y(self):
+        if self.change_y == 0:
+            return DIR_STILL
+        elif self.change_y > 0:
+            return DIR_UP
+        elif self.change_y < 0:
+            return DIR_DOWN
+
     def init_walk_left(self, *args):
         for i in args:
             self.walk_left_textures.append(arcade.load_texture(i, mirrored=True))
@@ -67,12 +77,12 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
     def init_stand_left(self, filename):
         self.stand_left_textures.append(arcade.load_texture(filename, mirrored=True))
 
-    def move(self):
-        self.center_x += self.change_x
-        self.center_y += self.change_y
+    # def move(self):
+    #     self.center_x += self.change_x
+    #     self.center_y += self.change_y
 
-    def update(self):
-        self.move()
+    # def update(self):
+    #     self.move()
         # if self.change_x < 0:
         #     self.set_texture(TEXTURE_LEFT)
         # elif self.change_x > 0:
