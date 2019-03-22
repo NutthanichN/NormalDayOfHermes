@@ -65,8 +65,8 @@ class PhysicsEngineSimple:
                     # print(self.player_sprite.left, 'x<0')
                     self.player_sprite.left = item.right + SAFE_SPACE
                     # print(self.player_sprite.left, 'x<0')
-            else:
-                print("Error, collision while player wasn't moving._x")
+            # else:
+            #     print("Error, collision while player wasn't moving._x")
         else:
             self.player_sprite.direction_x = self.player_sprite.next_direction_x
 
@@ -86,7 +86,7 @@ class PhysicsEngineSimple:
             elif self.player_sprite.direction_y == DIR_DOWN:
                 for item in hit_list:
                     self.player_sprite.bottom = item.top + SAFE_SPACE
-            else:
-                print("Error, collision while player wasn't moving._y")
+            # else:
+            #     print("Error, collision while player wasn't moving._y")
         else:
             self.player_sprite.direction_y = self.player_sprite.next_direction_y

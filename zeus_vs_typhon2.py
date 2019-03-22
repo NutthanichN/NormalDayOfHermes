@@ -7,9 +7,9 @@ SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
 SPRITE_SCALE = 0.75
 
-MOVEMENT_VX = 1
-JUMP_VY = 10
-GRAVITY = 1
+MOVEMENT_VX = 2
+JUMP_VY = 8
+GRAVITY = 0.5
 
 DIR_STILL = 0
 DIR_UP = 1
@@ -101,32 +101,14 @@ class CaveWindow(arcade.Window):
         self.map1_1.platform_sprite_list.draw()
 
     def on_key_press(self, key, key_modifiers):
-        if key in KEY_MAP:
+        if key == arcade.key.RIGHT or key == arcade.key.LEFT:
             self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][0]
             # self.hermes_sprite.change_y = MOVEMENT_VX * DIR_OFFSETS[KEY_MAP[key]][1]
+            self.hermes_sprite.next_direction_x = KEY_MAP[key]
 
-            if key == arcade.key.RIGHT or key == arcade.key.LEFT:
-                self.hermes_sprite.next_direction_x = KEY_MAP[key]
-
-            if key == arcade.key.UP:
-                if self.physics_engine_platform.can_jump():
-                    self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
-
-        # print(self.map1_1.wall_sprite_list[1].left)
-        # print(self.map1_1.wall_sprite_list[1].bottom)
-
-        # print(self.hermes_sprite.width)
-        # print(self.hermes_sprite.change_x)
-
-        # not quite work
-        # else:
-        #     if key == arcade.key.UP and key == arcade.key.RIGHT:
-        #         self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[DIR_RIGHT][0]
-        #     elif key == arcade.key.UP and key == arcade.key.LEFT:
-        #         self.hermes_sprite.change_x = MOVEMENT_VX * DIR_OFFSETS[DIR_LEFT][1]
-        #
-        #     if self.physics_engine_platform.can_jump():
-        #         self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+        if key == arcade.key.UP:
+            if self.physics_engine_platform.can_jump():
+                self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
 
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:
