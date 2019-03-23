@@ -1,6 +1,7 @@
 import arcade
 from models_zeus_vs_typhon2 import MainCharacter, MapDrawer
 import my_physics
+from pyglet import clock
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -73,10 +74,11 @@ class CaveWindow(arcade.Window):
                                           'images/Hermes/Hermes_right_55x86_w8.png',
                                           'images/Hermes/Hermes_right_55x86_w9.png')
 
-        self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG')
-        self.physics_engine_platform = arcade.PhysicsEnginePlatformer(self.hermes_sprite,
-                                                                      self.map1_1.platform_sprite_list,
-                                                                      GRAVITY)
+        self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG',
+                                'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG')
+        self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(self.hermes_sprite,
+                                                                          self.map1_1.platform_sprite_list,
+                                                                          GRAVITY)
         # self.physics_engine_wall = arcade.PhysicsEngineSimple(self.hermes_sprite,
         #                                                       self.map1_1.wall_sprite_list,)
 
@@ -87,9 +89,9 @@ class CaveWindow(arcade.Window):
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
-        # print('--------------------------------')
+        print('--------------------------------')
         # print(self.hermes_sprite.change_x, 'change x')
-        # print(self.hermes_sprite.position)
+        print(self.hermes_sprite.position)
 
         self.physics_engine_platform.update()
 
@@ -99,6 +101,8 @@ class CaveWindow(arcade.Window):
         self.hermes_sprite.draw()
         self.map1_1.wall_sprite_list.draw()
         self.map1_1.platform_sprite_list.draw()
+        # text = f"FPS: {clock.get_fps()}"
+        # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.RIGHT or key == arcade.key.LEFT:
@@ -109,6 +113,7 @@ class CaveWindow(arcade.Window):
         if key == arcade.key.UP:
             if self.physics_engine_platform.can_jump():
                 self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+                self.hermes_sprite.next_direction_y = KEY_MAP[key]
 
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:

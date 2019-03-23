@@ -30,6 +30,7 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.walk_right_textures = []
         self.walk_left_textures = []
 
+        # direction will check if character hits wall or not
         self.direction_x = self.check_direction_x()
         self.direction_y = self.check_direction_y()
         self.next_direction_x = DIR_STILL
@@ -81,27 +82,37 @@ class Map:
     def has_platform_at(self, r, c):
         return self.map[r][c] == '='
 
+    def has_ramp(self, r, c):
+        return self.map[r][c] == '<' or self.map[r][c] == '>'
+
+    def has_ramp_left_at(self, r, c):
+        return self.map[r][c] == '<'
+
+    def has_ramp_right_at(self, r, c):
+        return self.map[r][c] == '>'
+
     def has_item_at(self, r, c):
         pass
 
 
 class MapDrawer(Map):
-    def __init__(self, map_filename, wall_pic, platform_pic, item_pic=''):
+    def __init__(self, map_filename, wall_pic, platform_pic, ramp_left_pic, ramp_right_pic, item_pic=''):
         super().__init__(map_filename)
 
         # set wall sprite list
         self.wall_sprite_list = arcade.SpriteList()
-        self.set_wall_sprite_list(wall_pic)
+        self.init_wall_sprite_list(wall_pic)
 
         # set platform sprite list
         self.platform_sprite_list = arcade.SpriteList()
-        self.set_platform_sprite_list(platform_pic)
+        self.init_platform_sprite_list(platform_pic)
+        self.init_ramp_sprite_list(ramp_left_pic, ramp_right_pic)
 
         # set item sprite list
         self.item_sprite_list = arcade.SpriteList()
-        self.set_item_sprite_list(item_pic)
+        self.init_item_sprite_list(item_pic)
 
-    def set_sprite_list(self, pic_filename, lst, func):
+    def create_sprite_list(self, pic_filename, lst, func):
         for r in range(self.height):
             for c in range(self.width):
                 if func(r, c):
@@ -111,13 +122,35 @@ class MapDrawer(Map):
                     wall_sprite.center_y = y
                     lst.append(wall_sprite)
 
-    def set_wall_sprite_list(self, wall_pic):
-        self.set_sprite_list(wall_pic, self.wall_sprite_list, self.has_wall_at)
+    def init_wall_sprite_list(self, wall_pic):
+        self.create_sprite_list(wall_pic, self.wall_sprite_list, self.has_wall_at)
 
-    def set_platform_sprite_list(self, platform_pic):
-        self.set_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at)
+    def init_platform_sprite_list(self, platform_pic):
+        self.create_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at)
 
-    def set_item_sprite_list(self, item_pic):
+    def init_ramp_sprite_list(self, ramp_left_pic, ramp_right_pic):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.has_ramp(r, c):
+                    x, y = self.get_sprite_position(r, c)
+                    if self.has_ramp_left_at(r, c):
+                        ramp_left = arcade.Sprite(ramp_left_pic)
+                        ramp_left.points = ((-ramp_left.width // 2, -ramp_left.height // 2),
+                                            (ramp_left.width // 2, -ramp_left.height // 2),
+                                            (ramp_left.width // 2, ramp_left.height // 2))
+                        ramp_left.right = x + (ramp_left.width // 2)
+                        ramp_left.top = y + (ramp_left.height // 2)
+                        self.platform_sprite_list.append(ramp_left)
+                    else:
+                        ramp_right = arcade.Sprite(ramp_right_pic)
+                        ramp_right.points = ((-ramp_right.width // 2, ramp_right.height // 2),
+                                             (ramp_right.width // 2, -ramp_right.height // 2),
+                                             (-ramp_right.width // 2, -ramp_right.height // 2))
+                        ramp_right.right = x + (ramp_right.width // 2)
+                        ramp_right.top = y + (ramp_right.height // 2)
+                        self.platform_sprite_list.append(ramp_right)
+
+    def init_item_sprite_list(self, item_pic):
         pass
 
     def get_sprite_position(self, r, c):
