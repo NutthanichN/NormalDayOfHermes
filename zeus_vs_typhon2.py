@@ -3,8 +3,8 @@ from models_zeus_vs_typhon2 import MainCharacter, MapDrawer
 import my_physics
 from pyglet import clock
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 900
+SCREEN_HEIGHT = 720
 BLOCK_SIZE = 20
 SPRITE_SCALE = 0.75
 
