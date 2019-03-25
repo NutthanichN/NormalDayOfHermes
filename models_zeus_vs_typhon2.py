@@ -177,7 +177,6 @@ class MapDrawer(Map):
 
     def init_platform_sprite_list(self, platform_pic, trap_pic):
         self.create_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at, Platform)
-        # self.create_sprite_list(trap_pic, self.platform_sprite_list, self.has_trap_at, Platform)
 
     def init_ramp_sprite_list(self, ramp_left_pic, ramp_right_pic):
         for r in range(self.height):
@@ -201,17 +200,6 @@ class MapDrawer(Map):
                         ramp_right.top = y + (ramp_right.height // 2)
                         self.platform_sprite_list.append(ramp_right)
 
-    # def init_trap(self, trap_pic):
-    #     for r in range(self.height):
-    #         for c in range(self.width):
-    #             if self.has_trap_at(r, c):
-    #                 x, y = self.convert_to_x_y(r, c)
-    #                 sprite = Platform(trap_pic)
-    #                 sprite.set_trap(False, False, True, False)
-    #                 sprite.center_x = x
-    #                 sprite.center_y = y
-    #                 self.platform_sprite_list.append(sprite)
-
     def set_trap_direction(self, r, c, pic_left, pic_right, pic_top, pic_bottom):
         if self.map[r][c] == '_':
             return pic_top, False, False, True, False
@@ -234,8 +222,11 @@ class MapDrawer(Map):
                     sprite.set_trap(left, right, top, bottom)
                     sprite.center_x = x
                     sprite.center_y = y
-                    self.platform_sprite_list.append(sprite)
+
+                    if trap_pic == pic_left or trap_pic == pic_right:
+                        self.wall_sprite_list.append(sprite)
+                    elif trap_pic == pic_top or trap_pic == pic_bottom:
+                        self.platform_sprite_list.append(sprite)
 
     def init_item_sprite_list(self, item_pic):
         pass
-
