@@ -61,9 +61,9 @@ class PhysicsEngineSimple:
                     # print(self.player_sprite.right, 'x>0')
 
                     # print(item.trap_left)
-                    # if item.trap_left:
-                    #     self.player_sprite.death = True
-                    #     print(item.trap_left)
+                    if item.trap_left:
+                        self.player_sprite.death = True
+                        # print(item.trap_left)
 
                     self.player_sprite.right = item.left - SAFE_SPACE
                     # print(self.player_sprite.right, 'x>0')
@@ -72,9 +72,9 @@ class PhysicsEngineSimple:
                     # print(self.player_sprite.left, 'x<0')
 
                     # print(item.trap_right)
-                    # if item.trap_right:
-                    #     self.player_sprite.death = True
-                    #     print(item.trap_right)
+                    if item.trap_right:
+                        self.player_sprite.death = True
+                        # print(item.trap_right)
 
                     self.player_sprite.left = item.right + SAFE_SPACE
                     # print(self.player_sprite.left, 'x<0')
