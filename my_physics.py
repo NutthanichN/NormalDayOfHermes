@@ -53,16 +53,29 @@ class PhysicsEngineSimple:
                                           self.walls)
 
         # If we hit a wall, move so the edges are at the same point plus or minus safe space
+        # x axis
         if len(hit_list) > 0:
             # print('collision!!')
             if self.player_sprite.direction_x == DIR_RIGHT:
                 for item in hit_list:
                     # print(self.player_sprite.right, 'x>0')
+
+                    # print(item.trap_left)
+                    # if item.trap_left:
+                    #     self.player_sprite.death = True
+                    #     print(item.trap_left)
+
                     self.player_sprite.right = item.left - SAFE_SPACE
                     # print(self.player_sprite.right, 'x>0')
             elif self.player_sprite.direction_x == DIR_LEFT:
                 for item in hit_list:
                     # print(self.player_sprite.left, 'x<0')
+
+                    # print(item.trap_right)
+                    # if item.trap_right:
+                    #     self.player_sprite.death = True
+                    #     print(item.trap_right)
+
                     self.player_sprite.left = item.right + SAFE_SPACE
                     # print(self.player_sprite.left, 'x<0')
             else:
@@ -81,18 +94,19 @@ class PhysicsEngineSimple:
                                           self.walls)
 
         # If we hit a wall, move so the edges are at the same point plus or minus safe space
+        # y axis
         if len(hit_list) > 0:
-            print('collision!!')
+            # print('collision!!')
             if self.player_sprite.direction_y == DIR_UP:
                 for item in hit_list:
-                    print(self.player_sprite.top, 'y>0')
+                    # print(self.player_sprite.top, 'y>0')
                     self.player_sprite.top = item.bottom - SAFE_SPACE
-                    print(self.player_sprite.top, 'y>0')
+                    # print(self.player_sprite.top, 'y>0')
             elif self.player_sprite.direction_y == DIR_DOWN:
                 for item in hit_list:
-                    print(self.player_sprite.bottom, 'y<0')
+                    # print(self.player_sprite.bottom, 'y<0')
                     self.player_sprite.bottom = item.top + SAFE_SPACE
-                    print(self.player_sprite.bottom, 'y<0')
+                    # print(self.player_sprite.bottom, 'y<0')
             else:
                 pass
             #     print("Error, collision while player wasn't moving._y")
@@ -153,17 +167,25 @@ class PhysicsEnginePlatformer:
         hit_list = check_for_collision_with_list(self.player_sprite, self.platforms)
 
         # If we hit a wall, move so the edges are at the same point
+        # y axis
         if len(hit_list) > 0:
             if self.player_sprite.change_y > 0:
                 for item in hit_list:
                     self.player_sprite.top = min(item.bottom,
                                                  self.player_sprite.top)
+
+                    if item.trap_bottom:
+                        self.player_sprite.death = True
+
                 # print(f"Spot X ({self.player_sprite.center_x}, {self.player_sprite.center_y})")
             elif self.player_sprite.change_y < 0:
                 for item in hit_list:
                     while check_for_collision(self.player_sprite, item):
                         # self.player_sprite.bottom = item.top <- Doesn't work for ramps
                         self.player_sprite.bottom += 0.25
+
+                        if item.trap_top:
+                            self.player_sprite.death = True
 
                     # moving platform
                     if item.change_x != 0:
