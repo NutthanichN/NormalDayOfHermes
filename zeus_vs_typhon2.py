@@ -48,50 +48,41 @@ class CaveWindow(arcade.Window):
         """
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
-        # self.hermes_sprite = MainCharacter('images/Hermes/Hermes_right_55x86_w1.png', SCREEN_WIDTH // 2,
-        #                                    SCREEN_HEIGHT // 2,
-        #                                    SPRITE_SCALE)
-
-        self.hermes_sprite = MainCharacter(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SPRITE_SCALE)
-        self.hermes_sprite.init_stand_right('images/Hermes/Hermes_right_55x86_w1.png')
-        self.hermes_sprite.init_stand_left('images/Hermes/Hermes_right_55x86_w1.png')
-
-        self.hermes_sprite.init_walk_right('images/Hermes/Hermes_right_61x86_w2.png',
-                                           'images/Hermes/Hermes_right_64x86_w3.png',
-                                           'images/Hermes/Hermes_right_61x86_w4.png',
-                                           'images/Hermes/Hermes_right_55x86_w5.png',
-                                           'images/Hermes/Hermes_right_55x86_w6.png',
-                                           'images/Hermes/Hermes_right_51x86_w7.png',
-                                           'images/Hermes/Hermes_right_55x86_w8.png',
-                                           'images/Hermes/Hermes_right_55x86_w9.png')
-
-        self.hermes_sprite.init_walk_left('images/Hermes/Hermes_right_61x86_w2.png',
-                                          'images/Hermes/Hermes_right_64x86_w3.png',
-                                          'images/Hermes/Hermes_right_61x86_w4.png',
-                                          'images/Hermes/Hermes_right_55x86_w5.png',
-                                          'images/Hermes/Hermes_right_55x86_w6.png',
-                                          'images/Hermes/Hermes_right_51x86_w7.png',
-                                          'images/Hermes/Hermes_right_55x86_w8.png',
-                                          'images/Hermes/Hermes_right_55x86_w9.png')
-
         self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG',
-                                'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG')
+                                'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG',
+                                'images/trap_left_30x20.PNG', 'images/trap_right_30x20.PNG',
+                                'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG')
+
+        self.hermes_sprite = MainCharacter(self.map1_1, SPRITE_SCALE)
+        self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
+
+        self.hermes_sprite.init_walk_right_and_left('images/Hermes/Hermes_right_61x86_w2.png',
+                                                    'images/Hermes/Hermes_right_64x86_w3.png',
+                                                    'images/Hermes/Hermes_right_61x86_w4.png',
+                                                    'images/Hermes/Hermes_right_55x86_w5.png',
+                                                    'images/Hermes/Hermes_right_55x86_w6.png',
+                                                    'images/Hermes/Hermes_right_51x86_w7.png',
+                                                    'images/Hermes/Hermes_right_55x86_w8.png',
+                                                    'images/Hermes/Hermes_right_55x86_w9.png')
+
         self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(self.hermes_sprite,
                                                                           self.map1_1.platform_sprite_list,
                                                                           GRAVITY)
-        # self.physics_engine_wall = arcade.PhysicsEngineSimple(self.hermes_sprite,
-        #                                                       self.map1_1.wall_sprite_list,)
 
         self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
                                                                   self.map1_1.wall_sprite_list,)
 
     def update(self, delta):
+        if self.hermes_sprite.death:
+            print('Die!!')
+            self.hermes_sprite.death = False
+            # self.hermes_sprite.restart()
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
-        print('--------------------------------')
+        # print('--------------------------------')
         # print(self.hermes_sprite.change_x, 'change x')
-        print(self.hermes_sprite.position)
+        # print(self.hermes_sprite.position)
 
         self.physics_engine_platform.update()
 
