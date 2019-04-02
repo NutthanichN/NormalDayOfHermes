@@ -41,7 +41,7 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.next_direction_x = DIR_STILL
         self.next_direction_y = DIR_STILL
 
-        self.death = False
+        self.is_dead = False
 
     def check_direction_x(self):
         if self.change_x == 0:
@@ -74,10 +74,12 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         x, y = self.map.get_x_y_position(self.map.has_player_at)
         self.center_x = x
         self.center_y = y
-        self.death = False
+        self.is_dead = False
 
 
 class Platform(arcade.Sprite):
+    TRAP_MARGIN = 5
+
     def __init__(self, filename):
         super().__init__(filename)
 
@@ -91,6 +93,24 @@ class Platform(arcade.Sprite):
         self.trap_right = right
         self.trap_top = top
         self.trap_bottom = bottom
+
+    def init_trap_center(self, x, y):
+        self.center_x = x
+        self.center_y = y
+
+        if self.trap_left:
+            self.center_x -= self.TRAP_MARGIN
+        if self.trap_right:
+            self.center_x += self.TRAP_MARGIN
+        if self.trap_top:
+            self.center_y += self.TRAP_MARGIN
+        if self.trap_bottom:
+            self.center_y -= self.TRAP_MARGIN
+
+
+# class Item(arcade.Sprite):
+#     def __init__(self, filename):
+#         super().__init__(filename)
 
 
 class Map:
@@ -122,7 +142,14 @@ class Map:
                or self.map[r][c] == '{' or self.map[r][c] == '}'
 
     def has_item_at(self, r, c):
-        pass
+        """
+        1 = key
+        2 = hp_potion
+        3 = magic_potion
+        4 = super_magic_potion
+        """
+        return self.map[r][c] == '1' or self.map[r][c] == '2' \
+               or self.map[r][c] == '3' or self.map[r][c] == '4'
 
     def has_player_at(self, r, c):
         return self.map[r][c] == 'p'
@@ -131,7 +158,8 @@ class Map:
 class MapDrawer(Map):
     def __init__(self, map_filename, wall_pic, platform_pic,
                  ramp_left_pic, ramp_right_pic,
-                 trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic, item_pic=''):
+                 trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
+                 key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic):
 
         super().__init__(map_filename)
 
@@ -147,7 +175,8 @@ class MapDrawer(Map):
 
         # set item sprite list
         self.item_sprite_list = arcade.SpriteList()
-        self.init_item_sprite_list(item_pic)
+        self.collected_item_sprite_list = arcade.SpriteList()
+        self.init_item_sprite_list(key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic)
 
     def convert_to_x_y(self, r, c):
         r = r - 1
@@ -155,17 +184,17 @@ class MapDrawer(Map):
         y = r * BLOCK_SIZE + (BLOCK_SIZE + (BLOCK_SIZE // 2))
         return x, y
 
-    def get_x_y_position(self, func):
+    def get_x_y_position(self, condition):
         for r in range(self.height):
             for c in range(self.width):
-                if func(r, c):
+                if condition(r, c):
                     x, y = self.convert_to_x_y(r, c)
                     return x, y
 
-    def create_sprite_list(self, pic_filename, lst, func, sprite_obj):
+    def _create_sprite_list(self, pic_filename, lst, condition, sprite_obj):
         for r in range(self.height):
             for c in range(self.width):
-                if func(r, c):
+                if condition(r, c):
                     x, y = self.convert_to_x_y(r, c)
                     sprite = sprite_obj(pic_filename)
                     sprite.center_x = x
@@ -173,10 +202,10 @@ class MapDrawer(Map):
                     lst.append(sprite)
 
     def init_wall_sprite_list(self, wall_pic):
-        self.create_sprite_list(wall_pic, self.wall_sprite_list, self.has_wall_at, Platform)
+        self._create_sprite_list(wall_pic, self.wall_sprite_list, self.has_wall_at, Platform)
 
     def init_platform_sprite_list(self, platform_pic, trap_pic):
-        self.create_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at, Platform)
+        self._create_sprite_list(platform_pic, self.platform_sprite_list, self.has_platform_at, Platform)
 
     def init_ramp_sprite_list(self, ramp_left_pic, ramp_right_pic):
         for r in range(self.height):
@@ -200,7 +229,7 @@ class MapDrawer(Map):
                         ramp_right.top = y + (ramp_right.height // 2)
                         self.platform_sprite_list.append(ramp_right)
 
-    def set_trap_direction(self, r, c, pic_left, pic_right, pic_top, pic_bottom):
+    def set_up_trap_direction(self, r, c, pic_left, pic_right, pic_top, pic_bottom):
         if self.map[r][c] == '_':
             return pic_top, False, False, True, False
         elif self.map[r][c] == '-':
@@ -215,18 +244,41 @@ class MapDrawer(Map):
             for c in range(self.width):
                 if self.has_trap_at(r, c):
                     x, y = self.convert_to_x_y(r, c)
-                    trap_pic, left, right, top, bottom = self.set_trap_direction(r, c,
-                                                                                 pic_left, pic_right,
-                                                                                 pic_top, pic_bottom)
+                    trap_pic, left, right, top, bottom = self.set_up_trap_direction(r, c,
+                                                                                    pic_left, pic_right,
+                                                                                    pic_top, pic_bottom)
                     sprite = Platform(trap_pic)
                     sprite.set_trap(left, right, top, bottom)
-                    sprite.center_x = x
-                    sprite.center_y = y
+                    sprite.init_trap_center(x, y)
+                    # sprite.center_x = x
+                    # sprite.center_y = y
 
                     if trap_pic == pic_left or trap_pic == pic_right:
                         self.wall_sprite_list.append(sprite)
                     elif trap_pic == pic_top or trap_pic == pic_bottom:
                         self.platform_sprite_list.append(sprite)
 
-    def init_item_sprite_list(self, item_pic):
-        pass
+    def set_up_item_pic(self, r, c, key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic):
+        if self.map[r][c] == '1':
+            return key_pic
+        elif self.map[r][c] == '2':
+            return hp_potion_pic
+        elif self.map[r][c] == '3':
+            return magic_potion_pic
+        elif self.map[r][c] == '4':
+            return super_magic_potion_pic
+
+    def init_item_sprite_list(self, key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.has_item_at(r, c):
+                    x, y = self.convert_to_x_y(r, c)
+                    item_pic = self.set_up_item_pic(r, c, key_pic, hp_potion_pic,
+                                                    magic_potion_pic, super_magic_potion_pic)
+                    item = arcade.Sprite(item_pic)
+                    item.center_x = x
+                    item.center_y = y + 5
+                    self.item_sprite_list.append(item)
+        # self._create_sprite_list(self.set_up_item_pic(r, c, key_pic, hp_potion_pic,
+        #                                               magic_potion_pic, super_magic_potion_pic),
+        #                          self.item_sprite_list, self.has_item_at, arcade.Sprite)

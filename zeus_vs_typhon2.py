@@ -51,7 +51,9 @@ class CaveWindow(arcade.Window):
         self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG',
                                 'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG',
                                 'images/trap_left_30x20.PNG', 'images/trap_right_30x20.PNG',
-                                'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG')
+                                'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG',
+                                'images/key_18x19.PNG', 'images/hp_potion_18x19.PNG',
+                                'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG')
 
         self.hermes_sprite = MainCharacter(self.map1_1, SPRITE_SCALE)
         self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
@@ -73,10 +75,21 @@ class CaveWindow(arcade.Window):
                                                                   self.map1_1.wall_sprite_list,)
 
     def update(self, delta):
-        if self.hermes_sprite.death:
+        if self.hermes_sprite.is_dead:
             print('Die!!')
-            self.hermes_sprite.death = False
+            self.hermes_sprite.is_dead = False
             # self.hermes_sprite.restart()
+
+        hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.map1_1.item_sprite_list)
+        if len(hit_items) > 0:
+            for i in hit_items:
+                self.map1_1.collected_item_sprite_list.append(i)
+                self.map1_1.item_sprite_list.remove(i)
+
+        # print('-----------------------------')
+        # for hit in self.map1_1.collected_item_sprite_list:
+        #     print(hit)
+
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
@@ -92,6 +105,7 @@ class CaveWindow(arcade.Window):
         self.hermes_sprite.draw()
         self.map1_1.wall_sprite_list.draw()
         self.map1_1.platform_sprite_list.draw()
+        self.map1_1.item_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
 
