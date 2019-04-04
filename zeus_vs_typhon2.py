@@ -1,5 +1,5 @@
 import arcade
-from models_zeus_vs_typhon2 import MainCharacter, MapDrawer
+from models_zeus_vs_typhon2 import MainCharacter, MapDrawer, Status
 import my_physics
 from pyglet import clock
 
@@ -74,6 +74,9 @@ class CaveWindow(arcade.Window):
         self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
                                                                   self.map1_1.wall_sprite_list,)
 
+        self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, 'map/map1_1.txt', 'images/hp_lvl_20.png',
+                             'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
+
     def update(self, delta):
         if self.hermes_sprite.is_dead:
             print('Die!!')
@@ -108,6 +111,8 @@ class CaveWindow(arcade.Window):
         self.map1_1.item_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
+
+        self.status.draw()
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.RIGHT or key == arcade.key.LEFT:
