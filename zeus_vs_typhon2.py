@@ -74,8 +74,8 @@ class CaveWindow(arcade.Window):
         self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
                                                                   self.map1_1.wall_sprite_list,)
 
-        self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, 'map/map1_1.txt', 'images/hp_lvl_20.png',
-                             'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
+        self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.map1_1,
+                             'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
 
     def update(self, delta):
         if self.hermes_sprite.is_dead:
@@ -83,19 +83,39 @@ class CaveWindow(arcade.Window):
             self.hermes_sprite.is_dead = False
             # self.hermes_sprite.restart()
 
-        hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.map1_1.item_sprite_list)
+        hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.map1_1.items_sprite_list)
         if len(hit_items) > 0:
             for i in hit_items:
-                self.map1_1.collected_item_sprite_list.append(i)
-                self.map1_1.item_sprite_list.remove(i)
+                # print(i)
+                # self.map1_1.collected_items_list.append(i)
+                # self.map1_1.items_list.remove(i)
 
-        # print('-----------------------------')
-        # for hit in self.map1_1.collected_item_sprite_list:
-        #     print(hit)
+                # self.map1_1.collected_item_sprite_list.append(i)
+                self.map1_1.items_sprite_list.remove(i)
+                # self.map1_1.current_items_sprite_list.remove(i)
+                self.status.check_and_set_player_status(i)
+                i.kill()
 
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
+        self.map1_1.wall_sprite_list.update()
+        self.map1_1.platform_sprite_list.update()
+
+        self.map1_1.items_sprite_list.update()
+        print(list(self.map1_1.items_sprite_list))
+        # print('items_list and collected_items_list')
+        # print(self.map1_1.items_list)
+
+        # self.map1_1.current_items_sprite_list.update()
+        # print(list(self.map1_1.current_items_sprite_list))
+
+        self.map1_1.collected_item_sprite_list.update()
+        # print(list(self.map1_1.collected_item_sprite_list))
+        # print(self.map1_1.collected_items_list)
+        print('---------------------------------------------------------------------------')
+
+        # self.map1_1.collected_item_sprite_list.update() --> because line 94
         # print('--------------------------------')
         # print(self.hermes_sprite.change_x, 'change x')
         # print(self.hermes_sprite.position)
@@ -108,7 +128,7 @@ class CaveWindow(arcade.Window):
         self.hermes_sprite.draw()
         self.map1_1.wall_sprite_list.draw()
         self.map1_1.platform_sprite_list.draw()
-        self.map1_1.item_sprite_list.draw()
+        self.map1_1.items_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
 
@@ -124,6 +144,20 @@ class CaveWindow(arcade.Window):
             if self.physics_engine_platform.can_jump():
                 self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
                 self.hermes_sprite.next_direction_y = KEY_MAP[key]
+
+        if key == arcade.key.R:
+            # self.restart = True
+            self.hermes_sprite.restart()
+            print('Before:')
+            print('all items: ', list(self.map1_1.items_sprite_list))
+            # print('collected items: ', list(self.map1_1.collected_item_sprite_list))
+            # print('========================================================================')
+
+            self.map1_1.restart()
+            print('After:')
+            print('all items: ', list(self.map1_1.items_sprite_list))
+            # print('current items: ', list(self.map1_1.current_items_sprite_list))
+            print('========================================================================')
 
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:

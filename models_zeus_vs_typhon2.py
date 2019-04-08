@@ -46,6 +46,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
 
         self.current_hp_lvl = 3
         self.current_weapon_lvl = 3
+        self.current_key = 0
+        self.current_super_magic_potion = 0
 
     def check_direction_x(self):
         if self.change_x == 0:
@@ -79,6 +81,11 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.center_x = x
         self.center_y = y
         self.is_dead = False
+
+        self.current_hp_lvl = 3
+        self.current_weapon_lvl = 3
+        self.current_key = 0
+        self.current_super_magic_potion = 0
 
 
 class Platform(arcade.Sprite):
@@ -174,6 +181,12 @@ class MapDrawer(Map):
 
         super().__init__(map_filename)
 
+        # items pictures
+        self.key_pic = key_pic
+        self.hp_potion_pic = hp_potion_pic
+        self.magic_potion_pic = magic_potion_pic
+        self.super_magic_potion_pic = super_magic_potion_pic
+
         # set wall sprite list
         self.wall_sprite_list = arcade.SpriteList()
         self.init_wall_sprite_list(wall_pic)
@@ -185,7 +198,7 @@ class MapDrawer(Map):
         self.init_trap(trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic)
 
         # set item sprite list
-        self.item_sprite_list = arcade.SpriteList()
+        self.items_sprite_list = arcade.SpriteList()
         self.collected_item_sprite_list = arcade.SpriteList()
         self.init_item_sprite_list(key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic)
 
@@ -306,18 +319,26 @@ class MapDrawer(Map):
                     item.center_x = x
                     item.center_y = y + item.HOVER_MARGIN
                     self.set_item_ability(r, c, item)
-                    self.item_sprite_list.append(item)
+                    self.items_sprite_list.append(item)
+
+    def restart(self):
+        self.items_sprite_list = arcade.SpriteList()
+        self.init_item_sprite_list(self.key_pic, self.hp_potion_pic,
+                                   self.magic_potion_pic, self.super_magic_potion_pic)
+        # for item in self.collected_item_sprite_list:
+        #     self.items_sprite_list.append(item)
+        #     self.collected_item_sprite_list.remove(item)
 
 
-class Status(Map):
+class Status:
     MAX_HP_LVL = 6
     MAX_WEAPON_LVL = 6
 
-    def __init__(self, screen_width, screen_height, player, map_filename, hp_lvl_pic, weapon_lvl_pic, key_pic):
-        super().__init__(map_filename)
+    def __init__(self, screen_width, screen_height, player, map, hp_lvl_pic, weapon_lvl_pic, key_pic):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.player = player
+        self.map = map
 
         # collect pics to variable for reuse
         self.hp_lvl_pic = hp_lvl_pic
@@ -330,7 +351,9 @@ class Status(Map):
         self.init_weapon_lvl()
 
     def init_hp_lvl(self):
-        x = self.screen_width - 380
+        # sprite part
+        # still use magic number
+        x = self.screen_width - 220
         y = self.screen_height - 30
         for i in range(self.MAX_HP_LVL):
             hp = arcade.Sprite(self.hp_lvl_pic)
@@ -341,7 +364,9 @@ class Status(Map):
             x = new_x
 
     def init_weapon_lvl(self):
-        x = self.screen_width - 300
+        # sprite part
+        # still use magic number
+        x = self.screen_width - 220
         y = self.screen_height - 30 - BLOCK_SIZE
         for i in range(self.MAX_WEAPON_LVL):
             weapon = arcade.Sprite(self.weapon_lvl_pic)
@@ -352,32 +377,60 @@ class Status(Map):
             x = new_x
 
     def draw_hp_lvl(self):
-        x = self.screen_width - 400
+        # text part
+        # still use magic number
+        x = self.screen_width - 310
         y = self.screen_height - 40
-        arcade.draw_text('HP', x, y, arcade.color.BLACK, font_size=18)
-        current_hp_lvl = arcade.SpriteList()
+        arcade.draw_text('HP', x, y, arcade.color.BLACK, font_size=15)
+
+        # current_hp_lvl = arcade.SpriteList()
+        # for i in range(self.MAX_HP_LVL):
         for i in range(self.player.current_hp_lvl):
-            current_hp_lvl.append(self.hp_lvl_sprite_list[i])
-        current_hp_lvl.draw()
+            if i < self.MAX_HP_LVL:
+                self.hp_lvl_sprite_list[i].draw()
+        #         current_hp_lvl.append(self.hp_lvl_sprite_list[i])
+        # current_hp_lvl.draw()
 
     def draw_weapon_lvl(self):
-        x = self.screen_width - 400
+        # text part
+        # still use magic number
+        x = self.screen_width - 310
         y = self.screen_height - 40 - BLOCK_SIZE
-        arcade.draw_text('Weapon lvl', x, y, arcade.color.BLACK, font_size=18)
-        current_weapon_lvl = arcade.SpriteList()
+        arcade.draw_text('Weapon lvl', x, y, arcade.color.BLACK, font_size=15)
+
+        # current_weapon_lvl = arcade.SpriteList()
+        # for i in range(self.MAX_WEAPON_LVL):
         for i in range(self.player.current_weapon_lvl):
-            current_weapon_lvl.append(self.weapon_lvl_sprite_list[i])
-        current_weapon_lvl.draw()
+            if i < self.MAX_WEAPON_LVL:
+                self.weapon_lvl_sprite_list[i].draw()
+        #         current_weapon_lvl.append(self.weapon_lvl_sprite_list[i])
+        # current_weapon_lvl.draw()
+
+    def draw_key_number(self):
+        x = self.screen_width - 310
+        y = self.screen_height - 40 - (2 * BLOCK_SIZE) - 5
+        arcade.draw_text(f'Key x {str(self.player.current_key)}', x, y, arcade.color.BLACK, font_size=15)
+
+    def draw_super_magic_potion_number(self):
+        x = self.screen_width - 310 + 80
+        y = self.screen_height - 40 - (2 * BLOCK_SIZE) - 5
+        arcade.draw_text(f'Super magic potion x {str(self.player.current_super_magic_potion)}',
+                         x, y, arcade.color.BLACK, font_size=15)
 
     def draw(self):
         self.draw_hp_lvl()
         self.draw_weapon_lvl()
-        # start_text_x = self.width // 2  # - 500
-        # start_text_y = self.height // 2  # - 30
-        # arcade.draw_text('HP', start_text_x, start_text_y, arcade.color.BLACK)
-        # print('draw!!!')
+        self.draw_key_number()
+        self.draw_super_magic_potion_number()
 
-    def check_collected_item(self):
-        pass
+    def check_and_set_player_status(self, item):
+        if item.key:
+            self.player.current_key += 1
+        elif item.add_hp:
+            self.player.current_hp_lvl += 1
+        elif item.add_weapon_ability:
+            self.player.current_weapon_lvl += 1
+        elif item.stun_monster:
+            self.player.current_super_magic_potion += 1
 
-# arcade.text
+# bug --> add magic after hp but it add both hp and magic // now solve
