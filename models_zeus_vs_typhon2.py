@@ -1,6 +1,7 @@
 import arcade
 import arcade.key
 from random import randint
+import time
 
 BLOCK_SIZE = 20
 
@@ -350,6 +351,10 @@ class Status:
         self.init_hp_lvl()
         self.init_weapon_lvl()
 
+        self.start_time = time.time()
+        self.end_time = None
+        self.delta_time = None
+
     def init_hp_lvl(self):
         # sprite part
         # still use magic number
@@ -417,7 +422,20 @@ class Status:
         arcade.draw_text(f'Super magic potion x {str(self.player.current_super_magic_potion)}',
                          x, y, arcade.color.BLACK, font_size=15)
 
+    def draw_time(self):
+        self.delta_time = self.end_time - self.start_time
+        hour = self.delta_time // 3600
+        minute = (self.delta_time % 3600) // 60
+        second = (self.delta_time % 3600) % 60
+
+        x = self.screen_width - 850
+        y = self.screen_height - 40 - BLOCK_SIZE
+        # print(self.delta_time)
+        arcade.draw_text(f'Time {int(hour)}:{int(minute)}:{int(second)}', x, y, arcade.color.BLACK, font_size=15)
+
     def draw(self):
+        self.end_time = time.time()
+        self.draw_time()
         self.draw_hp_lvl()
         self.draw_weapon_lvl()
         self.draw_key_number()

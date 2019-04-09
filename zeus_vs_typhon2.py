@@ -103,7 +103,7 @@ class CaveWindow(arcade.Window):
         self.map1_1.platform_sprite_list.update()
 
         self.map1_1.items_sprite_list.update()
-        print(list(self.map1_1.items_sprite_list))
+        # print(list(self.map1_1.items_sprite_list))
         # print('items_list and collected_items_list')
         # print(self.map1_1.items_list)
 
@@ -113,7 +113,7 @@ class CaveWindow(arcade.Window):
         self.map1_1.collected_item_sprite_list.update()
         # print(list(self.map1_1.collected_item_sprite_list))
         # print(self.map1_1.collected_items_list)
-        print('---------------------------------------------------------------------------')
+        # print('---------------------------------------------------------------------------')
 
         # self.map1_1.collected_item_sprite_list.update() --> because line 94
         # print('--------------------------------')
@@ -131,6 +131,7 @@ class CaveWindow(arcade.Window):
         self.map1_1.items_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
+        # print(text)
 
         self.status.draw()
 
