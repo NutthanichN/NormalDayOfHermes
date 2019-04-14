@@ -30,6 +30,38 @@ KEY_MAP = {arcade.key.UP: DIR_UP,
            arcade.key.RIGHT: DIR_RIGHT}
 
 
+def set_up_maps(*args):
+    block_pic = 'images/block_20.PNG'
+    ramp_left_pic = 'images/ramp_left_20.PNG'
+    ramp_right_pic = 'images/ramp_right_20.PNG'
+    trap_left_pic = 'images/trap_left_30x20.PNG'
+    trap_right_pic = 'images/trap_right_30x20.PNG'
+    trap_top_pic = 'images/trap_top_20x30.PNG'
+    trap_bottom_pic = 'images/trap_bottom_20x30.PNG'
+    key_pic = 'images/key_18x19.PNG'
+    hp_potion_pic = 'images/hp_potion_18x19.PNG'
+    magic_potion_pic = 'images/magic_potion_18x19.PNG'
+    super_magic_potion_pic = 'images/super_magic_potion_18x19.PNG'
+    door_red_pic = 'images/door_red_60x80.PNG'
+    door_green_pic = 'images/door_green_60x80.PNG'
+
+    maps = []
+    for map in args:
+        map_filename = map
+        maps.append(MapDrawer(map_filename, block_pic, block_pic, ramp_left_pic, ramp_right_pic,
+                              trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
+                              key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
+                              door_red_pic, door_green_pic))
+
+    return maps
+
+    # return MapDrawer(map_filename, block_pic, block_pic, ramp_left_pic, ramp_right_pic,
+    #                  trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
+    #                  key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
+    #                  door_red_pic, door_green_pic)
+
+
+
 class CaveWindow(arcade.Window):
     def __init__(self, width, height):
         super().__init__(width, height)
@@ -48,15 +80,18 @@ class CaveWindow(arcade.Window):
         """
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
-        self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG',
-                                'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG',
-                                'images/trap_left_30x20.PNG', 'images/trap_right_30x20.PNG',
-                                'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG',
-                                'images/key_18x19.PNG', 'images/hp_potion_18x19.PNG',
-                                'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG',
-                                'images/door_red_60x80.PNG', 'images/door_green_60x80.PNG')
+        # self.map1_1 = MapDrawer('map/map1_1.txt', 'images/block_20.PNG', 'images/block_20.PNG',
+        #                         'images/ramp_left_20.PNG', 'images/ramp_right_20.PNG',
+        #                         'images/trap_left_30x20.PNG', 'images/trap_right_30x20.PNG',
+        #                         'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG',
+        #                         'images/key_18x19.PNG', 'images/hp_potion_18x19.PNG',
+        #                         'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG',
+        #                         'images/door_red_60x80.PNG', 'images/door_green_60x80.PNG')
 
-        self.hermes_sprite = MainCharacter(self.map1_1, SPRITE_SCALE)
+        self.maps = set_up_maps('map/map1_1.txt')
+        self.current_map = self.maps[0]
+
+        self.hermes_sprite = MainCharacter(self.current_map, SPRITE_SCALE)
         self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
 
         self.hermes_sprite.init_walk_right_and_left('images/Hermes/Hermes_right_61x86_w2.png',
@@ -69,13 +104,13 @@ class CaveWindow(arcade.Window):
                                                     'images/Hermes/Hermes_right_55x86_w9.png')
 
         self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(self.hermes_sprite,
-                                                                          self.map1_1.platform_sprite_list,
+                                                                          self.current_map.platform_sprite_list,
                                                                           GRAVITY)
 
         self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
-                                                                  self.map1_1.wall_sprite_list,)
+                                                                  self.current_map.wall_sprite_list, )
 
-        self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.map1_1,
+        self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.current_map,
                              'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
 
     def update(self, delta):
@@ -84,7 +119,7 @@ class CaveWindow(arcade.Window):
             self.hermes_sprite.is_dead = False
             # self.hermes_sprite.restart()
 
-        hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.map1_1.items_sprite_list)
+        hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.current_map.items_sprite_list)
         if len(hit_items) > 0:
             for i in hit_items:
                 # print(i)
@@ -92,22 +127,22 @@ class CaveWindow(arcade.Window):
                 # self.map1_1.items_list.remove(i)
 
                 # self.map1_1.collected_item_sprite_list.append(i)
-                self.map1_1.items_sprite_list.remove(i)
+                self.current_map.items_sprite_list.remove(i)
                 # self.map1_1.current_items_sprite_list.remove(i)
                 self.status.check_and_set_player_status(i)
                 i.kill()
 
-        for door in self.map1_1.door_sprite_list:
+        for door in self.current_map.door_sprite_list:
             if door.has_player(self.hermes_sprite):
                 print('Enter door')
 
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
-        self.map1_1.wall_sprite_list.update()
-        self.map1_1.platform_sprite_list.update()
+        self.current_map.wall_sprite_list.update()
+        self.current_map.platform_sprite_list.update()
 
-        self.map1_1.items_sprite_list.update()
+        self.current_map.items_sprite_list.update()
         # print(list(self.map1_1.items_sprite_list))
         # print('items_list and collected_items_list')
         # print(self.map1_1.items_list)
@@ -115,7 +150,7 @@ class CaveWindow(arcade.Window):
         # self.map1_1.current_items_sprite_list.update()
         # print(list(self.map1_1.current_items_sprite_list))
 
-        self.map1_1.collected_item_sprite_list.update()
+        self.current_map.collected_item_sprite_list.update()
         # print(list(self.map1_1.collected_item_sprite_list))
         # print(self.map1_1.collected_items_list)
         # print('---------------------------------------------------------------------------')
@@ -130,11 +165,11 @@ class CaveWindow(arcade.Window):
     def on_draw(self):
         arcade.start_render()
 
-        self.map1_1.door_sprite_list.draw()
+        self.current_map.door_sprite_list.draw()
         self.hermes_sprite.draw()
-        self.map1_1.wall_sprite_list.draw()
-        self.map1_1.platform_sprite_list.draw()
-        self.map1_1.items_sprite_list.draw()
+        self.current_map.wall_sprite_list.draw()
+        self.current_map.platform_sprite_list.draw()
+        self.current_map.items_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
         # print(text)
@@ -156,13 +191,13 @@ class CaveWindow(arcade.Window):
             # self.restart = True
             self.hermes_sprite.restart()
             print('Before:')
-            print('all items: ', list(self.map1_1.items_sprite_list))
+            print('all items: ', list(self.current_map.items_sprite_list))
             # print('collected items: ', list(self.map1_1.collected_item_sprite_list))
             # print('========================================================================')
 
-            self.map1_1.restart()
+            self.current_map.restart()
             print('After:')
-            print('all items: ', list(self.map1_1.items_sprite_list))
+            print('all items: ', list(self.current_map.items_sprite_list))
             # print('current items: ', list(self.map1_1.current_items_sprite_list))
             print('========================================================================')
 
