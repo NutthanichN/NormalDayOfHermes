@@ -120,6 +120,26 @@ class Platform(arcade.Sprite):
             self.center_y -= self.TRAP_MARGIN
 
 
+class Door(arcade.Sprite):
+    MARGIN_X = 30
+    MARGIN_Y = 40
+
+    def __init__(self, filename):
+        super().__init__(filename)
+
+        self.active = True
+
+    def adjust_position(self):
+        self.center_y += self.MARGIN_Y - 10
+
+    def has_player(self, player):
+        if self.left + (self.MARGIN_X // 2) < player.center_x < self.right - (self.MARGIN_X // 2):
+            if self.bottom < player.center_y < self.top:
+                return True
+            return False
+        return False
+
+
 class Item(arcade.Sprite):
     HOVER_MARGIN = 5
 
@@ -173,12 +193,16 @@ class Map:
     def has_player_at(self, r, c):
         return self.map[r][c] == 'p'
 
+    def has_door_at(self, r, c):
+        return self.map[r][c] == 'd'
+
 
 class MapDrawer(Map):
     def __init__(self, map_filename, wall_pic, platform_pic,
                  ramp_left_pic, ramp_right_pic,
                  trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
-                 key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic):
+                 key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
+                 door_red_pic, door_green_pic):
 
         super().__init__(map_filename)
 
@@ -202,6 +226,10 @@ class MapDrawer(Map):
         self.items_sprite_list = arcade.SpriteList()
         self.collected_item_sprite_list = arcade.SpriteList()
         self.init_item_sprite_list(key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic)
+
+        # set door sprite list
+        self.door_sprite_list = arcade.SpriteList()
+        self.init_door_sprite_list(door_red_pic, door_green_pic)
 
     def convert_to_x_y(self, r, c):
         r = r - 1
@@ -293,7 +321,7 @@ class MapDrawer(Map):
         elif self.map[r][c] == '4':
             return super_magic_potion_pic
 
-    def set_item_ability(self, r, c, item):
+    def set_up_item_ability(self, r, c, item):
         if self.map[r][c] == '1':
             item.key = True
         elif self.map[r][c] == '2':
@@ -319,8 +347,20 @@ class MapDrawer(Map):
                     item = Item(item_pic)
                     item.center_x = x
                     item.center_y = y + item.HOVER_MARGIN
-                    self.set_item_ability(r, c, item)
+                    self.set_up_item_ability(r, c, item)
                     self.items_sprite_list.append(item)
+
+    def init_door_sprite_list(self, door_red_pic, door_green_pic):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.has_door_at(r, c):
+                    x, y = self.convert_to_x_y(r, c)
+                    door = Door(door_green_pic)
+                    door.active = True
+                    door.center_x = x
+                    door.center_y = y
+                    door.adjust_position()
+                    self.door_sprite_list.append(door)
 
     def restart(self):
         self.items_sprite_list = arcade.SpriteList()

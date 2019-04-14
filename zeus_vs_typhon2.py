@@ -53,7 +53,8 @@ class CaveWindow(arcade.Window):
                                 'images/trap_left_30x20.PNG', 'images/trap_right_30x20.PNG',
                                 'images/trap_top_20x30.PNG', 'images/trap_bottom_20x30.PNG',
                                 'images/key_18x19.PNG', 'images/hp_potion_18x19.PNG',
-                                'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG')
+                                'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG',
+                                'images/door_red_60x80.PNG', 'images/door_green_60x80.PNG')
 
         self.hermes_sprite = MainCharacter(self.map1_1, SPRITE_SCALE)
         self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
@@ -96,6 +97,10 @@ class CaveWindow(arcade.Window):
                 self.status.check_and_set_player_status(i)
                 i.kill()
 
+        for door in self.map1_1.door_sprite_list:
+            if door.has_player(self.hermes_sprite):
+                print('Enter door')
+
         self.hermes_sprite.update_animation()
         self.physics_engine_wall.update()
 
@@ -125,6 +130,7 @@ class CaveWindow(arcade.Window):
     def on_draw(self):
         arcade.start_render()
 
+        self.map1_1.door_sprite_list.draw()
         self.hermes_sprite.draw()
         self.map1_1.wall_sprite_list.draw()
         self.map1_1.platform_sprite_list.draw()
