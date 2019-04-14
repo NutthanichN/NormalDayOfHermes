@@ -120,14 +120,41 @@ class Platform(arcade.Sprite):
             self.center_y -= self.TRAP_MARGIN
 
 
-class Door(arcade.Sprite):
-    MARGIN_X = 30
-    MARGIN_Y = 40
+class Item(arcade.Sprite):
+    HOVER_MARGIN = 5
 
     def __init__(self, filename):
         super().__init__(filename)
 
+        self.key = False
+        self.add_hp = False
+        self.add_weapon_ability = False
+        self.stun_monster = False
+
+
+class Door(arcade.Sprite):
+    MARGIN_X = 30
+    MARGIN_Y = 40
+
+    RED = 0
+    GREEN = 1
+
+    def __init__(self, door_red_pic, door_green_pic):
+        super().__init__()
+
+        # add textures
+        self.textures = []
+        texture_red_light = arcade.load_texture(door_red_pic)
+        texture_green_light = arcade.load_texture(door_green_pic)
+        self.textures.append(texture_red_light)
+        self.textures.append(texture_green_light)
+
+        # default is active
         self.active = True
+        self.set_texture(self.GREEN)
+
+    def set_active(self, bool):
+        self.active = bool
 
     def adjust_position(self):
         self.center_y += self.MARGIN_Y - 10
@@ -139,17 +166,11 @@ class Door(arcade.Sprite):
             return False
         return False
 
-
-class Item(arcade.Sprite):
-    HOVER_MARGIN = 5
-
-    def __init__(self, filename):
-        super().__init__(filename)
-
-        self.key = False
-        self.add_hp = False
-        self.add_weapon_ability = False
-        self.stun_monster = False
+    def update(self):
+        if self.active:
+            self.set_texture(self.GREEN)
+        else:
+            self.set_texture(self.RED)
 
 
 class Map:
@@ -355,8 +376,8 @@ class MapDrawer(Map):
             for c in range(self.width):
                 if self.has_door_at(r, c):
                     x, y = self.convert_to_x_y(r, c)
-                    door = Door(door_green_pic)
-                    door.active = True
+                    door = Door(door_red_pic, door_green_pic)
+                    door.set_active(True)
                     door.center_x = x
                     door.center_y = y
                     door.adjust_position()
@@ -372,7 +393,7 @@ class MapDrawer(Map):
 
 
 class Status:
-    MAX_HP_LVL = 6
+    MAX_HP_LVL = 8
     MAX_WEAPON_LVL = 6
 
     def __init__(self, screen_width, screen_height, player, map, hp_lvl_pic, weapon_lvl_pic, key_pic):

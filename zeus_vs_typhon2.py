@@ -88,8 +88,8 @@ class CaveWindow(arcade.Window):
         #                         'images/magic_potion_18x19.PNG', 'images/super_magic_potion_18x19.PNG',
         #                         'images/door_red_60x80.PNG', 'images/door_green_60x80.PNG')
 
-        self.maps = set_up_maps('map/map1_1.txt')
-        self.current_map = self.maps[0]
+        self.maps = set_up_maps('map/map1_1.txt', 'map/map1_2.txt')
+        self.current_map = self.maps[1]
 
         self.hermes_sprite = MainCharacter(self.current_map, SPRITE_SCALE)
         self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
@@ -141,6 +141,7 @@ class CaveWindow(arcade.Window):
 
         self.current_map.wall_sprite_list.update()
         self.current_map.platform_sprite_list.update()
+        self.current_map.door_sprite_list.update()
 
         self.current_map.items_sprite_list.update()
         # print(list(self.map1_1.items_sprite_list))
