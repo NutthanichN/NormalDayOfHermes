@@ -2,17 +2,17 @@ import arcade
 import arcade.key
 from random import randint
 import time
+from arcade.geometry import check_for_collision
 
 BLOCK_SIZE = 20
-
-TEXTURE_RIGHT = 0
-TEXTURE_LEFT = 1
 
 DIR_STILL = 0
 DIR_UP = 1
 DIR_RIGHT = 2
 DIR_DOWN = 3
 DIR_LEFT = 4
+
+GRAVITY = 0.5
 
 
 class Model(arcade.Sprite):
@@ -25,6 +25,7 @@ class Model(arcade.Sprite):
 
 
 class MainCharacter(arcade.AnimatedWalkingSprite):
+    """can jump 5 block"""
     def __init__(self, map, scale):
         self.map = map
         x, y = self.map.get_x_y_position(self.map.has_player_at)
@@ -89,11 +90,68 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.current_super_magic_potion = 0
 
 
+class Monster(arcade.Sprite):
+    MARGIN_Y = 20
+    MOVEMENT_VX = 3
+
+    TEXTURE_RIGHT = 0
+    TEXTURE_LEFT = 1
+
+    def __init__(self, filename, map):
+        super().__init__()
+
+        self.textures = []
+        texture_right = arcade.load_texture(filename)
+        self.textures.append(texture_right)
+        texture_left = arcade.load_texture(filename, mirrored=True)
+        self.textures.append(texture_left)
+
+        self.set_texture(self.TEXTURE_RIGHT)
+
+        self.map = map
+        self.is_dead = False
+
+        self.change_x = self.MOVEMENT_VX
+
+    def adjust_center_y(self):
+        # self.center_y += abs((self.center_y - self.bottom) - BLOCK_SIZE)
+        self.center_y += self.MARGIN_Y
+
+    def is_touching_player(self, player):
+        return check_for_collision(player, self)
+
+    def is_on_platform(self):
+        for p in self.map.platform_sprite_list:
+            if not p.is_ramp:
+                if p.center_y <= self.bottom <= p.top and p.left <= self.center_x <= p.right:
+                    return True
+        print('not on platform')
+        return False
+
+    def attack(self):
+        pass
+
+    def update(self):
+        # if there is no platform just move to another direction
+        if not self.is_on_platform():
+            self.change_x = -self.change_x
+
+        # set texture
+        if self.change_x < 0:
+            self.set_texture(self.TEXTURE_LEFT)
+        else:
+            self.set_texture(self.TEXTURE_RIGHT)
+
+        self.center_x += self.change_x
+
+
 class Platform(arcade.Sprite):
     TRAP_MARGIN = 5
 
     def __init__(self, filename):
         super().__init__(filename)
+
+        self.is_ramp = False
 
         self.trap_left = False
         self.trap_right = False
@@ -217,13 +275,16 @@ class Map:
     def has_door_at(self, r, c):
         return self.map[r][c] == 'd'
 
+    def has_monster_at(self, r, c):
+        return self.map[r][c] == 'm'
+
 
 class MapDrawer(Map):
     def __init__(self, map_filename, wall_pic, platform_pic,
                  ramp_left_pic, ramp_right_pic,
                  trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
                  key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
-                 door_red_pic, door_green_pic):
+                 door_red_pic, door_green_pic, monster_pic):
 
         super().__init__(map_filename)
 
@@ -251,6 +312,9 @@ class MapDrawer(Map):
         # set door sprite list
         self.door_sprite_list = arcade.SpriteList()
         self.init_door_sprite_list(door_red_pic, door_green_pic)
+
+        # init monster
+        self.monster = self.init_monster_sprite(monster_pic)
 
     def convert_to_x_y(self, r, c):
         r = r - 1
@@ -293,6 +357,7 @@ class MapDrawer(Map):
                                             (ramp_left.width // 2, ramp_left.height // 2))
                         ramp_left.right = x + (ramp_left.width // 2)
                         ramp_left.top = y + (ramp_left.height // 2)
+                        ramp_left.is_ramp = True
                         self.platform_sprite_list.append(ramp_left)
                     else:
                         ramp_right = Platform(ramp_right_pic)
@@ -301,6 +366,7 @@ class MapDrawer(Map):
                                              (-ramp_right.width // 2, -ramp_right.height // 2))
                         ramp_right.right = x + (ramp_right.width // 2)
                         ramp_right.top = y + (ramp_right.height // 2)
+                        ramp_right.is_ramp = True
                         self.platform_sprite_list.append(ramp_right)
 
     def set_up_trap_direction(self, r, c, pic_left, pic_right, pic_top, pic_bottom):
@@ -382,6 +448,17 @@ class MapDrawer(Map):
                     door.center_y = y
                     door.adjust_position()
                     self.door_sprite_list.append(door)
+
+    def init_monster_sprite(self, monster_pic):
+        for r in range(self.height):
+            for c in range(self.width):
+                if self.has_monster_at(r, c):
+                    x, y = self.convert_to_x_y(r, c)
+                    monster = Monster(monster_pic, self)
+                    monster.center_x = x
+                    monster.center_y = y
+                    monster.adjust_center_y()
+                    return monster
 
     def restart(self):
         self.items_sprite_list = arcade.SpriteList()
