@@ -112,12 +112,9 @@ class CaveWindow(arcade.Window):
         # self.monster_sprite = Monster('images/monsters/Sphinx_right_69x63.PNG',
         #                               self.current_map, SPRITE_SCALE)
 
-        self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(self.hermes_sprite,
-                                                                          self.current_map.platform_sprite_list,
-                                                                          GRAVITY)
-
-        self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
-                                                                  self.current_map.wall_sprite_list, )
+        self.physics_engine_platform = arcade.SpriteList()
+        self.physics_engine_wall = arcade.SpriteList()
+        self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
         # self.physics_engine_platform = my_physics2.PhysicsEnginePlatformer(self.hermes_sprite,
         #                                                                    self.current_map.platform_sprite_list,
@@ -128,6 +125,14 @@ class CaveWindow(arcade.Window):
 
         self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.current_map,
                              'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
+
+    def set_up_physics_engines(self, player, current_map):
+        self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(player,
+                                                                          current_map.platform_sprite_list,
+                                                                          GRAVITY)
+
+        self.physics_engine_wall = my_physics.PhysicsEngineSimple(player,
+                                                                  current_map.wall_sprite_list)
 
     def update(self, delta):
         if not self.hermes_sprite.is_dead:
@@ -149,12 +154,9 @@ class CaveWindow(arcade.Window):
                     print('Enter door')
                     if 0 <= self.maps.index(self.current_map) < len(self.maps):
                         self.current_map = self.maps[self.maps.index(self.current_map) + 1]
-                        self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(self.hermes_sprite,
-                                                                                          self.current_map.platform_sprite_list,
-                                                                                          GRAVITY)
-
-                        self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
-                                                                                  self.current_map.wall_sprite_list, )
+                        self.hermes_sprite.set_map(self.current_map)
+                        self.hermes_sprite.set_up_position()
+                        self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
             if self.current_map.monster is not None:
                 if self.current_map.monster.is_touching_player(self.hermes_sprite):
@@ -188,7 +190,6 @@ class CaveWindow(arcade.Window):
             # self.map1_1.collected_item_sprite_list.update() --> because line 94
             # print('--------------------------------')
             # print(self.hermes_sprite.change_x, 'change x')
-            # print(self.hermes_sprite.position)
             # print(self.hermes_sprite.position)
         else:
             print('Die!!')

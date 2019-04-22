@@ -78,16 +78,32 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.stand_right_textures.append(arcade.load_texture(filename))
         self.stand_left_textures.append(arcade.load_texture(filename, mirrored=True))
 
-    def restart(self):
-        x, y = self.map.get_x_y_position(self.map.has_player_at)
-        self.center_x = x
-        self.center_y = y
-        self.is_dead = False
-
+    def restart_statuses(self):
         self.current_hp_lvl = 3
         self.current_weapon_lvl = 3
         self.current_key = 0
         self.current_super_magic_potion = 0
+
+    def set_up_position(self):
+        x, y = self.map.get_x_y_position(self.map.has_player_at)
+        self.center_x = x
+        self.center_y = y
+
+    def set_map(self, map):
+        self.map = map
+
+    def restart(self):
+        # x, y = self.map.get_x_y_position(self.map.has_player_at)
+        # self.center_x = x
+        # self.center_y = y
+        self.set_up_position()
+        self.restart_statuses()
+        self.is_dead = False
+
+        # self.current_hp_lvl = 3
+        # self.current_weapon_lvl = 3
+        # self.current_key = 0
+        # self.current_super_magic_potion = 0
 
 
 class Monster(arcade.Sprite):
@@ -273,7 +289,7 @@ class Map:
         return self.map[r][c] == 'p'
 
     def has_door_at(self, r, c):
-        return self.map[r][c] == 'd'
+        return self.map[r][c] == 'A' or self.map[r][c] == 'D'
 
     def has_monster_at(self, r, c):
         return self.map[r][c] == 'm'
@@ -443,10 +459,14 @@ class MapDrawer(Map):
                 if self.has_door_at(r, c):
                     x, y = self.convert_to_x_y(r, c)
                     door = Door(door_red_pic, door_green_pic)
-                    door.set_active(True)
+                    # door.set_active(True)
                     door.center_x = x
                     door.center_y = y
                     door.adjust_position()
+                    if self.map[r][c] == 'A':
+                        door.set_active(True)
+                    else:
+                        door.set_active(False)
                     self.door_sprite_list.append(door)
 
     def init_monster_sprite(self, monster_pic):
