@@ -3,7 +3,7 @@ import arcade
 from models_zeus_vs_typhon2 import MainCharacter, MapDrawer, Status, Monster
 import my_physics
 from pyglet import clock
-# import my_physics2
+import my_physics2
 
 
 SCREEN_WIDTH = 900
@@ -12,8 +12,8 @@ BLOCK_SIZE = 20
 SPRITE_SCALE = 0.75
 # SPRITE_SCALE = 1
 
-MOVEMENT_VX = 2    # 2
-JUMP_VY = 8    # 8
+MOVEMENT_VX = 3    # 2
+JUMP_VY = 11    # 8
 GRAVITY = 0.5     # 0.5
 
 DIR_STILL = 0
@@ -112,27 +112,26 @@ class CaveWindow(arcade.Window):
         # self.monster_sprite = Monster('images/monsters/Sphinx_right_69x63.PNG',
         #                               self.current_map, SPRITE_SCALE)
 
-        self.physics_engine_platform = arcade.SpriteList()
-        self.physics_engine_wall = arcade.SpriteList()
+        # self.physics_engine_platform = None
+        # self.physics_engine_wall = None
+        self.physics_engines = None
         self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
-        # self.physics_engine_platform = my_physics2.PhysicsEnginePlatformer(self.hermes_sprite,
-        #                                                                    self.current_map.platform_sprite_list,
-        #                                                                    GRAVITY)
-        #
-        # self.physics_engine_wall = my_physics.PhysicsEngineSimple(self.hermes_sprite,
-        #                                                           self.current_map.wall_sprite_list, )
+        # self.physics_engines = my_physics2.PhysicsEngine(self.hermes_sprite, self.current_map.wall_sprite_list,
+        #                                                  self.current_map.platform_sprite_list, GRAVITY)
 
         self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.current_map,
                              'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
 
     def set_up_physics_engines(self, player, current_map):
-        self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(player,
-                                                                          current_map.platform_sprite_list,
-                                                                          GRAVITY)
-
-        self.physics_engine_wall = my_physics.PhysicsEngineSimple(player,
-                                                                  current_map.wall_sprite_list)
+        # self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(player,
+        #                                                                   current_map.platform_sprite_list,
+        #                                                                   GRAVITY)
+        #
+        # self.physics_engine_wall = my_physics.PhysicsEngineSimple(player,
+        #                                                           current_map.wall_sprite_list)
+        self.physics_engines = my_physics.PhysicsEngine(player, current_map.wall_sprite_list,
+                                                        current_map.platform_sprite_list, GRAVITY)
 
     def update(self, delta):
         if not self.hermes_sprite.is_dead:
@@ -157,7 +156,10 @@ class CaveWindow(arcade.Window):
                         self.hermes_sprite.set_map(self.current_map)
                         self.hermes_sprite.set_up_position()
                         self.set_up_physics_engines(self.hermes_sprite, self.current_map)
-
+                        # self.physics_engines = my_physics2.PhysicsEngine(self.hermes_sprite,
+                        #                                                  self.current_map.wall_sprite_list,
+                        #                                                  self.current_map.platform_sprite_list,
+                        #                                                  GRAVITY)
             if self.current_map.monster is not None:
                 if self.current_map.monster.is_touching_player(self.hermes_sprite):
                     self.hermes_sprite.is_dead = True
@@ -166,8 +168,9 @@ class CaveWindow(arcade.Window):
 
             self.hermes_sprite.update_animation()
             # self.hermes_sprite.update()
-            self.physics_engine_platform.update()
-            self.physics_engine_wall.update()
+            # self.physics_engine_platform.update()
+            # self.physics_engine_wall.update()
+            self.physics_engines.update()
 
             self.current_map.wall_sprite_list.update()
             self.current_map.platform_sprite_list.update()
@@ -221,7 +224,10 @@ class CaveWindow(arcade.Window):
             self.hermes_sprite.next_direction_x = KEY_MAP[key]
 
         if key == arcade.key.UP:
-            if self.physics_engine_platform.can_jump():
+            # if self.physics_engine_platform.can_jump():
+            #     self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
+            #     self.hermes_sprite.next_direction_y = KEY_MAP[key]
+            if self.physics_engines.can_jump():
                 self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
                 self.hermes_sprite.next_direction_y = KEY_MAP[key]
 
@@ -238,6 +244,18 @@ class CaveWindow(arcade.Window):
             print('all items: ', list(self.current_map.items_sprite_list))
             # print('current items: ', list(self.map1_1.current_items_sprite_list))
             print('========================================================================')
+
+        if key == arcade.key.X:
+            self.current_map = self.maps[self.maps.index(self.current_map) + 1]
+            self.hermes_sprite.set_map(self.current_map)
+            self.hermes_sprite.set_up_position()
+            self.set_up_physics_engines(self.hermes_sprite, self.current_map)
+
+        if key == arcade.key.Z:
+            self.current_map = self.maps[self.maps.index(self.current_map) - 1]
+            self.hermes_sprite.set_map(self.current_map)
+            self.hermes_sprite.set_up_position()
+            self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:
