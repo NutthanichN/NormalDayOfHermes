@@ -4,6 +4,7 @@ from models_zeus_vs_typhon2 import MainCharacter, MapDrawer, Status, Monster
 import my_physics
 from pyglet import clock
 import my_physics2
+from random import randrange
 
 
 SCREEN_WIDTH = 900
@@ -52,6 +53,7 @@ def set_up_maps(*args):
     monster_pic1 = 'images/monsters/Sphinx_right_69x63.PNG'
     monster_pic2 = 'images/monsters/Orthrus_right_89x53.PNG'
     monster_pic3 = 'images/monsters/Chimera_right_90x56.PNG'
+    monster_bullet_pic = 'images/monster_bullet_33x12.PNG'
 
     maps = []
     for map in args:
@@ -59,7 +61,7 @@ def set_up_maps(*args):
         maps.append(MapDrawer(map_filename, block_pic, block_pic, ramp_left_pic, ramp_right_pic,
                               trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
                               key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
-                              door_red_pic, door_green_pic, monster_pic1))
+                              door_red_pic, door_green_pic, monster_pic1, monster_bullet_pic))
 
     return maps
 
@@ -98,7 +100,7 @@ class CaveWindow(arcade.Window):
         self.maps = set_up_maps('map/map1_1.txt', 'map/map1_2.txt')
         self.current_map = self.maps[1]
 
-        self.hermes_sprite = MainCharacter(self.current_map, SPRITE_SCALE)
+        self.hermes_sprite = MainCharacter(self.current_map, SPRITE_SCALE, 'images/player_bullet_33x12.png')
         self.hermes_sprite.init_stand_right_and_left('images/Hermes/Hermes_right_55x86_w1.png')
 
         self.hermes_sprite.init_walk_right_and_left('images/Hermes/Hermes_right_61x86_w2.png',
@@ -185,12 +187,32 @@ class CaveWindow(arcade.Window):
                     self.change_map(True)
 
             if self.current_map.monster is not None:
-                if self.current_map.monster.is_touching_player(self.hermes_sprite):
+                if self.hermes_sprite.is_hit_by(self.current_map.monster):
                     self.hermes_sprite.is_dead = True
 
+                if randrange(100) == 0:
+                    self.current_map.monster.attack()
+
+                # check if player is hir by monster's bullet
+                hit_list1 = arcade.check_for_collision_with_list(self.hermes_sprite,
+                                                                 self.current_map.monster.bullet_sprite_list)
+                for m_b in hit_list1:
+                    self.hermes_sprite.calculate_damage(m_b)
+                    m_b.kill()
+
+                # check if monster is hit by player's bullet
+                hit_list2 = arcade.check_for_collision_with_list(self.current_map.monster,
+                                                                 self.hermes_sprite.bullet_sprite_list)
+                for p_m in hit_list2:
+                    self.current_map.monster.calculate_damage(p_m)
+                    p_m.kill()
+
                 self.current_map.monster.update()
+                self.current_map.monster.bullet_sprite_list.update()
 
             self.hermes_sprite.update_animation()
+            self.hermes_sprite.update_status()
+            self.hermes_sprite.bullet_sprite_list.update()
             # self.hermes_sprite.update()
             # self.physics_engine_platform.update()
             # self.physics_engine_wall.update()
@@ -230,12 +252,15 @@ class CaveWindow(arcade.Window):
 
         self.current_map.door_sprite_list.draw()
         self.hermes_sprite.draw()
+        self.hermes_sprite.bullet_sprite_list.draw()
         self.current_map.wall_sprite_list.draw()
         self.current_map.platform_sprite_list.draw()
         self.current_map.items_sprite_list.draw()
 
         if self.current_map.monster is not None:
             self.current_map.monster.draw()
+            self.current_map.monster.draw_hp()
+            self.current_map.monster.bullet_sprite_list.draw()
         # text = f"FPS: {clock.get_fps()}"
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
         # print(text)
@@ -262,6 +287,9 @@ class CaveWindow(arcade.Window):
                 self.hermes_sprite.change_y = JUMP_VY * DIR_OFFSETS[KEY_MAP[key]][1]
                 self.hermes_sprite.next_direction_y = KEY_MAP[key]
 
+        if key == arcade.key.SPACE:
+            self.hermes_sprite.attack()
+
         if key == arcade.key.R:
             # self.restart = True
             self.hermes_sprite.restart()
@@ -281,9 +309,6 @@ class CaveWindow(arcade.Window):
 
         if key == arcade.key.Z:
             self.change_map(False)
-
-        if key == arcade.key.S:
-            self.hermes_sprite.is_dead = False
 
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:

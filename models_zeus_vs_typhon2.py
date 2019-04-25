@@ -12,21 +12,10 @@ DIR_RIGHT = 2
 DIR_DOWN = 3
 DIR_LEFT = 4
 
-GRAVITY = 0.5
-
-
-class Model(arcade.Sprite):
-    def __init__(self, filename, x, y, scale):
-        super().__init__(filename, scale=scale)
-        self.center_x = x
-        self.center_y = y
-        self.change_x = 0
-        self.change_y = 0
-
 
 class MainCharacter(arcade.AnimatedWalkingSprite):
     """can jump 5 block"""
-    def __init__(self, map, scale):
+    def __init__(self, map, scale, bullet_pic):
         self.map = map
         x, y = self.map.get_x_y_position(self.map.has_player_at)
 
@@ -50,6 +39,9 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.current_weapon_lvl = 3
         self.current_key = 0
         self.current_super_magic_potion = 0
+
+        self.bullet_pic = bullet_pic
+        self.bullet_sprite_list = arcade.SpriteList()
 
     def check_direction_x(self):
         if self.change_x == 0:
@@ -93,29 +85,48 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.map = map
 
     def restart(self):
-        # x, y = self.map.get_x_y_position(self.map.has_player_at)
-        # self.center_x = x
-        # self.center_y = y
         self.set_up_position()
         self.restart_statuses()
         self.is_dead = False
 
-        # self.current_hp_lvl = 3
-        # self.current_weapon_lvl = 3
-        # self.current_key = 0
-        # self.current_super_magic_potion = 0
+    def is_hit_by(self, sprite):
+        return check_for_collision(sprite, self)
+
+    def calculate_damage(self, bullet):
+        """cal bullet damage and update status"""
+        if 0 < self.current_hp_lvl:
+            self.current_hp_lvl -= bullet.damage
+
+    def update_status(self):
+        if self.current_hp_lvl == 0:
+            self.is_dead = True
+
+    def attack(self):
+        bullet = Bullet(self.bullet_pic)
+        bullet.change_x = 5
+        bullet.damage = self.current_weapon_lvl * 100
+        bullet.center_y = self.center_y
+        if self.direction_x == DIR_LEFT:
+            bullet.right = self.left
+            bullet.change_x = -bullet.change_x
+        else:
+            bullet.left = self.right
+            bullet.change_x = abs(bullet.change_x)
+
+        bullet.first_center_x = bullet.center_x
+        bullet.distance *= self.current_weapon_lvl
+        # bullet.distance = 200
+        self.bullet_sprite_list.append(bullet)
 
 
 class Monster(arcade.Sprite):
     MARGIN_Y = 20
     MOVEMENT_VX = 3
-    JUMP_VY = 11  # 8
-    GRAVITY = 0.5
 
     TEXTURE_RIGHT = 0
     TEXTURE_LEFT = 1
 
-    def __init__(self, filename, map):
+    def __init__(self, filename, map, bullet_pic):
         super().__init__()
 
         self.textures = []
@@ -127,15 +138,22 @@ class Monster(arcade.Sprite):
         self.set_texture(self.TEXTURE_RIGHT)
 
         self.map = map
+        self.hp = 2000
         self.is_dead = False
 
         self.change_x = self.MOVEMENT_VX
+
+        self.bullet_pic = bullet_pic
+        self.bullet_sprite_list = arcade.SpriteList()
+
+    def set_hp(self, hp):
+        self.hp = hp
 
     def adjust_center_y(self):
         # self.center_y += abs((self.center_y - self.bottom) - BLOCK_SIZE)
         self.center_y += self.MARGIN_Y
 
-    def is_touching_player(self, player):
+    def is_hit_by(self, player):
         return check_for_collision(player, self)
 
     def is_on_platform(self):
@@ -147,12 +165,71 @@ class Monster(arcade.Sprite):
         return False
 
     def attack(self):
-        pass
+        bullet = Bullet(self.bullet_pic)
+        bullet.change_x = 7
+        bullet.damage = 1
+        bullet.distance = 200
+        bullet.center_y = self.center_y
+        if self.change_x < 0:
+            bullet.right = self.left
+            bullet.change_x = -bullet.change_x
+        else:
+            bullet.left = self.right
+            bullet.change_x = abs(bullet.change_x)
+
+        self.bullet_sprite_list.append(bullet)
+
+    def calculate_damage(self, bullet):
+        """cal bullet damage and update status"""
+        if 0 < self.hp:
+            self.hp -= bullet.damage
+
+    def draw_hp(self):
+        arcade.draw_text(f"{self.hp}", self.left, self.top + 5, arcade.color.BLACK)
 
     def update(self):
         # if there is no platform just move to another direction
         if not self.is_on_platform():
             self.change_x = -self.change_x
+
+        # set texture
+        if self.change_x < 0:
+            self.set_texture(self.TEXTURE_LEFT)
+        else:
+            self.set_texture(self.TEXTURE_RIGHT)
+
+        self.center_x += self.change_x
+
+
+class Bullet(arcade.Sprite):
+    TEXTURE_RIGHT = 0
+    TEXTURE_LEFT = 1
+
+    def __init__(self, filename):
+        super().__init__(filename)
+
+        self.textures = []
+        texture_right = arcade.load_texture(filename)
+        self.textures.append(texture_right)
+        texture_left = arcade.load_texture(filename, mirrored=True)
+        self.textures.append(texture_left)
+
+        self.set_texture(self.TEXTURE_RIGHT)
+
+        # default --> later set in player's class
+        self.damage = 0
+
+        # default
+        self.first_center_x = 0
+        self.distance = 50
+
+        # default
+        self.change_x = 0
+
+    def update(self):
+        # kill itself
+        if abs(self.center_x - self.first_center_x) == self.distance:
+            self.kill()
 
         # set texture
         if self.change_x < 0:
@@ -302,7 +379,7 @@ class MapDrawer(Map):
                  ramp_left_pic, ramp_right_pic,
                  trap_left_pic, trap_right_pic, trap_top_pic, trap_bottom_pic,
                  key_pic, hp_potion_pic, magic_potion_pic, super_magic_potion_pic,
-                 door_red_pic, door_green_pic, monster_pic):
+                 door_red_pic, door_green_pic, monster_pic, monster_bullet_pic):
 
         super().__init__(map_filename)
 
@@ -332,7 +409,9 @@ class MapDrawer(Map):
         self.init_door_sprite_list(door_red_pic, door_green_pic)
 
         # init monster
-        self.monster = self.init_monster_sprite(monster_pic)
+        self.monster = self.init_monster_sprite(monster_pic, monster_bullet_pic)
+
+        self.count_time = True
 
     def convert_to_x_y(self, r, c):
         r = r - 1
@@ -471,12 +550,12 @@ class MapDrawer(Map):
                         door.set_active(False)
                     self.door_sprite_list.append(door)
 
-    def init_monster_sprite(self, monster_pic):
+    def init_monster_sprite(self, monster_pic, monster_bullet_pic):
         for r in range(self.height):
             for c in range(self.width):
                 if self.has_monster_at(r, c):
                     x, y = self.convert_to_x_y(r, c)
-                    monster = Monster(monster_pic, self)
+                    monster = Monster(monster_pic, self, monster_bullet_pic)
                     monster.center_x = x
                     monster.center_y = y
                     monster.adjust_center_y()
