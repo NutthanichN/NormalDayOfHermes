@@ -109,6 +109,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
 class Monster(arcade.Sprite):
     MARGIN_Y = 20
     MOVEMENT_VX = 3
+    JUMP_VY = 11  # 8
+    GRAVITY = 0.5
 
     TEXTURE_RIGHT = 0
     TEXTURE_LEFT = 1
