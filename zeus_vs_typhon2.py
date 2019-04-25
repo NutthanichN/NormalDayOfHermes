@@ -220,8 +220,9 @@ class CaveWindow(arcade.Window):
             # print(self.hermes_sprite.change_x, 'change x')
             # print(self.hermes_sprite.position)
         else:
-            print('Die!!')
-            self.hermes_sprite.is_dead = False
+            return
+            # print('Die!!')
+            # self.hermes_sprite.is_dead = False
             # self.hermes_sprite.restart()
 
     def on_draw(self):
@@ -240,7 +241,12 @@ class CaveWindow(arcade.Window):
         # print(text)
 
         self.status.draw()
+
         # self.monster_sprite.draw()
+
+        if self.hermes_sprite.is_dead:
+            arcade.draw_text('Game Over', 320, SCREEN_HEIGHT // 2,
+                             arcade.color.BLACK, 50)
 
     def on_key_press(self, key, key_modifiers):
         if key == arcade.key.RIGHT or key == arcade.key.LEFT:
@@ -275,7 +281,10 @@ class CaveWindow(arcade.Window):
 
         if key == arcade.key.Z:
             self.change_map(False)
-            
+
+        if key == arcade.key.S:
+            self.hermes_sprite.is_dead = False
+
     def on_key_release(self, key, key_modifiers):
         # if key == arcade.key.UP or key == arcade.key.DOWN:
         #     self.hermes_sprite.change_y = 0
