@@ -196,8 +196,8 @@ class CaveWindow(arcade.Window):
                     if self.hermes_sprite.is_hit_by(self.current_map.monster):
                         self.hermes_sprite.is_dead = True
 
-                    # if randrange(100) == 0:
-                    #     self.current_map.monster.attack()
+                    if randrange(100) == 0:
+                        self.current_map.monster.attack()
 
                     # check if player is hir by monster's bullet
                     hit_list1 = arcade.check_for_collision_with_list(self.hermes_sprite,

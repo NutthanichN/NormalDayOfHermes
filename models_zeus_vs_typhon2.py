@@ -106,8 +106,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
     def attack(self):
         bullet = Bullet(self.bullet_pic)
         bullet.change_x = 5
-        # bullet.damage = self.current_weapon_lvl * 100
-        bullet.damage = 2000
+        bullet.damage = self.current_weapon_lvl * 100
+        # bullet.damage = 2000
         bullet.center_y = self.center_y
         if self.direction_x == DIR_LEFT:
             bullet.right = self.left
@@ -117,8 +117,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
             bullet.change_x = abs(bullet.change_x)
 
         bullet.first_center_x = bullet.center_x
-        # bullet.distance *= self.current_weapon_lvl
-        bullet.distance = 200
+        bullet.distance *= self.current_weapon_lvl
+        # bullet.distance = 200
         self.bullet_sprite_list.append(bullet)
 
 
@@ -571,7 +571,8 @@ class MapDrawer(Map):
         self.items_sprite_list = arcade.SpriteList()
         self.init_item_sprite_list(self.key_pic, self.hp_potion_pic,
                                    self.magic_potion_pic, self.super_magic_potion_pic)
-        self.init_monster_sprite(self.monster_pic, self.monster_bullet_pic)
+        if self.monster is not None:
+            self.monster = self.init_monster_sprite(self.monster_pic, self.monster_bullet_pic)
         # for item in self.collected_item_sprite_list:
         #     self.items_sprite_list.append(item)
         #     self.collected_item_sprite_list.remove(item)
