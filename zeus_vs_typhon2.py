@@ -8,7 +8,6 @@ import my_physics2
 from random import randrange
 import time
 
-
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = 'Normal day of Hermes'
@@ -114,9 +113,6 @@ class CaveWindow(arcade.Window):
                                                     'images/Hermes/Hermes_right_55x86_w8.png',
                                                     'images/Hermes/Hermes_right_55x86_w9.png')
 
-        # self.monster_sprite = Monster('images/monsters/Sphinx_right_69x63.PNG',
-        #                               self.current_map)
-
         # self.physics_engine_platform = None
         # self.physics_engine_wall = None
         self.physics_engines = None
@@ -129,6 +125,7 @@ class CaveWindow(arcade.Window):
                              'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
 
         self.check_attack_time = 0
+        self.game_end = False
 
     def set_up_physics_engines(self, player, current_map):
         # self.physics_engine_platform = my_physics.PhysicsEnginePlatformer(player,
@@ -172,88 +169,95 @@ class CaveWindow(arcade.Window):
         #     self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
     def update(self, delta):
-        if not self.hermes_sprite.is_dead:
-            hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.current_map.items_sprite_list)
-            if len(hit_items) > 0:
-                for i in hit_items:
-                    # print(i)
-                    # self.map1_1.collected_items_list.append(i)
-                    # self.map1_1.items_list.remove(i)
+        if not self.game_end:
+            if not self.hermes_sprite.is_dead:
+                hit_items = arcade.check_for_collision_with_list(self.hermes_sprite, self.current_map.items_sprite_list)
+                if len(hit_items) > 0:
+                    for i in hit_items:
+                        # print(i)
+                        # self.map1_1.collected_items_list.append(i)
+                        # self.map1_1.items_list.remove(i)
 
-                    # self.map1_1.collected_item_sprite_list.append(i)
-                    self.current_map.items_sprite_list.remove(i)
-                    # self.map1_1.current_items_sprite_list.remove(i)
-                    self.status.check_and_set_player_status(i)
-                    i.kill()
+                        # self.map1_1.collected_item_sprite_list.append(i)
+                        self.current_map.items_sprite_list.remove(i)
+                        # self.map1_1.current_items_sprite_list.remove(i)
+                        self.status.check_and_set_player_status(i)
+                        i.kill()
 
-            for door in self.current_map.door_sprite_list:
-                if door.has_player(self.hermes_sprite) and door.active:
-                    print('Enter door')
-                    self.change_map(True)
+                for door in self.current_map.door_sprite_list:
+                    if door.has_player(self.hermes_sprite) and door.active:
+                        if door.is_last_door:
+                            self.game_end = True
+                        print('Enter door')
+                        self.change_map(True)
 
-            if self.current_map.monster is not None:
-                if not self.current_map.monster.is_dead:
-                    if self.hermes_sprite.is_hit_by(self.current_map.monster):
-                        self.hermes_sprite.is_dead = True
+                if self.current_map.monster is not None:
+                    if not self.current_map.monster.is_dead:
+                        if self.hermes_sprite.is_hit_by(self.current_map.monster):
+                            self.hermes_sprite.is_dead = True
 
-                    if randrange(100) == 0:
-                        self.current_map.monster.attack()
+                        if randrange(100) == 0:
+                            self.current_map.monster.attack()
 
-                    # check if player is hir by monster's bullet
-                    hit_list1 = arcade.check_for_collision_with_list(self.hermes_sprite,
-                                                                     self.current_map.monster.bullet_sprite_list)
-                    for m_b in hit_list1:
-                        self.hermes_sprite.calculate_damage(m_b)
-                        m_b.kill()
+                        # check if player is hir by monster's bullet
+                        hit_list1 = arcade.check_for_collision_with_list(self.hermes_sprite,
+                                                                         self.current_map.monster.bullet_sprite_list)
+                        for m_b in hit_list1:
+                            self.hermes_sprite.calculate_damage(m_b)
+                            m_b.kill()
 
-                    # check if monster is hit by player's bullet
-                    hit_list2 = arcade.check_for_collision_with_list(self.current_map.monster,
-                                                                     self.hermes_sprite.bullet_sprite_list)
-                    for p_m in hit_list2:
-                        self.current_map.monster.calculate_damage(p_m)
-                        p_m.kill()
+                        # check if monster is hit by player's bullet
+                        hit_list2 = arcade.check_for_collision_with_list(self.current_map.monster,
+                                                                         self.hermes_sprite.bullet_sprite_list)
+                        for p_m in hit_list2:
+                            self.current_map.monster.calculate_damage(p_m)
+                            p_m.kill()
 
-                    self.current_map.monster.update()
-                    self.current_map.monster.bullet_sprite_list.update()
-                else:
-                    self.current_map.monster = None
+                        self.current_map.monster.update()
+                        self.current_map.monster.bullet_sprite_list.update()
+                    else:
+                        self.current_map.monster = None
 
-            self.hermes_sprite.update_animation()
-            self.hermes_sprite.update_status()
-            self.hermes_sprite.bullet_sprite_list.update()
-            # self.hermes_sprite.update()
-            # self.physics_engine_platform.update()
-            # self.physics_engine_wall.update()
-            self.physics_engines.update()
-            # self.monster_sprite.update()
+                self.hermes_sprite.update_animation()
+                self.hermes_sprite.update_status()
+                self.hermes_sprite.bullet_sprite_list.update()
+                # self.hermes_sprite.update()
+                # self.physics_engine_platform.update()
+                # self.physics_engine_wall.update()
+                self.physics_engines.update()
+                # self.monster_sprite.update()
 
-            self.current_map.wall_sprite_list.update()
-            self.current_map.platform_sprite_list.update()
-            self.current_map.door_sprite_list.update()
+                self.current_map.wall_sprite_list.update()
+                self.current_map.platform_sprite_list.update()
+                self.current_map.door_sprite_list.update()
 
-            self.current_map.items_sprite_list.update()
+                self.current_map.items_sprite_list.update()
 
-            # print(list(self.map1_1.items_sprite_list))
-            # print('items_list and collected_items_list')
-            # print(self.map1_1.items_list)
+                # print(list(self.map1_1.items_sprite_list))
+                # print('items_list and collected_items_list')
+                # print(self.map1_1.items_list)
 
-            # self.map1_1.current_items_sprite_list.update()
-            # print(list(self.map1_1.current_items_sprite_list))
+                # self.map1_1.current_items_sprite_list.update()
+                # print(list(self.map1_1.current_items_sprite_list))
 
-            self.current_map.collected_item_sprite_list.update()
-            # print(list(self.map1_1.collected_item_sprite_list))
-            # print(self.map1_1.collected_items_list)
-            # print('---------------------------------------------------------------------------')
+                self.current_map.collected_item_sprite_list.update()
+                # print(list(self.map1_1.collected_item_sprite_list))
+                # print(self.map1_1.collected_items_list)
+                # print('---------------------------------------------------------------------------')
 
-            # self.map1_1.collected_item_sprite_list.update() --> because line 94
-            # print('--------------------------------')
-            # print(self.hermes_sprite.change_x, 'change x')
-            # print(self.hermes_sprite.position)
+                # self.map1_1.collected_item_sprite_list.update() --> because line 94
+                # print('--------------------------------')
+                # print(self.hermes_sprite.change_x, 'change x')
+                # print(self.hermes_sprite.position)
+            else:
+                # if player die
+                return
+                # print('Die!!')
+                # self.hermes_sprite.is_dead = False
+                # self.hermes_sprite.restart()
         else:
+            # player pass all map
             return
-            # print('Die!!')
-            # self.hermes_sprite.is_dead = False
-            # self.hermes_sprite.restart()
 
     def on_draw(self):
         arcade.start_render()
@@ -275,10 +279,12 @@ class CaveWindow(arcade.Window):
 
         self.status.draw()
 
-        # self.monster_sprite.draw()
-
         if self.hermes_sprite.is_dead:
             arcade.draw_text('Game Over', 320, SCREEN_HEIGHT // 2,
+                             arcade.color.BLACK, 50)
+
+        if self.game_end:
+            arcade.draw_text('You win!!', 320, SCREEN_HEIGHT // 2,
                              arcade.color.BLACK, 50)
 
     def on_key_press(self, key, key_modifiers):
