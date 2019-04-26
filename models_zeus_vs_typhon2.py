@@ -1,6 +1,6 @@
 import arcade
 import arcade.key
-from random import randint
+from random import randint, randrange
 import time
 from arcade.geometry import check_for_collision
 
@@ -125,6 +125,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
 class Monster(arcade.Sprite):
     MARGIN_Y = 20
     MOVEMENT_VX = 3
+    MAX_MOVEMENT_VX = 6
+    ACC_X = 1
 
     TEXTURE_RIGHT = 0
     TEXTURE_LEFT = 1
@@ -143,6 +145,8 @@ class Monster(arcade.Sprite):
         self.map = map
         self.hp = 2000
         self.is_dead = False
+
+        self.move_time = 0
 
         self.change_x = self.MOVEMENT_VX
 
@@ -179,6 +183,9 @@ class Monster(arcade.Sprite):
 
         self.bullet_sprite_list.append(bullet)
 
+    def move_suddenly(self):
+        pass
+
     def calculate_damage(self, bullet):
         """cal bullet damage and update status"""
         if 0 < self.hp:
@@ -200,6 +207,11 @@ class Monster(arcade.Sprite):
         else:
             self.set_texture(self.TEXTURE_RIGHT)
 
+        # if self.can_move_fast:
+        #     if randrange(100) == 0:
+        #         self.change_x = self.MAX_MOVEMENT_VX
+        #     else:
+        #         self.change_x = self.MOVEMENT_VX
         self.center_x += self.change_x
 
 
@@ -243,6 +255,7 @@ class Bullet(arcade.Sprite):
 
 
 class Platform(arcade.Sprite):
+    """add spacial variable to show that player can only hit at that direction"""
     TRAP_MARGIN = 5
 
     def __init__(self, filename):
@@ -273,6 +286,19 @@ class Platform(arcade.Sprite):
             self.center_y += self.TRAP_MARGIN
         if self.trap_bottom:
             self.center_y -= self.TRAP_MARGIN
+
+    def check_nearest_side(self, x, y):
+        """Return left, right, up, down"""
+        top_distance = abs(y - self.top)
+        bottom_distance = abs(self.bottom - y)
+        left_distance = abs(x - self.left)
+        right_distance = abs(self.right - x)
+        min_distance = min(top_distance, bottom_distance, left_distance, right_distance)
+        out = {top_distance: 'top',
+               bottom_distance: 'bottom',
+               left_distance: 'left',
+               right_distance: 'right'}[min_distance]
+        return out
 
 
 class Item(arcade.Sprite):
@@ -306,6 +332,7 @@ class Door(arcade.Sprite):
 
         # default is active
         self.active = True
+        self.is_last_door = False
         self.set_texture(self.GREEN)
 
     def set_active(self, bool):
@@ -370,10 +397,20 @@ class Map:
         return self.map[r][c] == 'p'
 
     def has_door_at(self, r, c):
-        return self.map[r][c] == 'A' or self.map[r][c] == 'D'
+        """
+        A = active door
+        L = active and is last door
+        D = not active door (player can't enter)
+        """
+        return self.map[r][c] == 'A' or self.map[r][c] == 'D' or self.map[r][c] == 'L'
 
     def has_monster_at(self, r, c):
-        return self.map[r][c] == 'm'
+        """
+        s = hp 1000
+        m = hp 2000
+        l = hp 3000
+        """
+        return self.map[r][c] == 's' or self.map[r][c] == 'm' or self.map[r][c] == 'l'
 
 
 class MapDrawer(Map):
@@ -519,7 +556,7 @@ class MapDrawer(Map):
         elif self.map[r][c] == '3':
             item.add_weapon_ability = True
         elif self.map[r][c] == '4':
-            num = randint(0, 2)
+            num = randint(1, 2)
             if num == 0:
                 item.stun_monster = True
             elif num == 1:
@@ -552,6 +589,9 @@ class MapDrawer(Map):
                     door.adjust_position()
                     if self.map[r][c] == 'A':
                         door.set_active(True)
+                    elif self.map[r][c] == 'L':
+                        door.set_active(True)
+                        door.is_last_door = True
                     else:
                         door.set_active(False)
                     self.door_sprite_list.append(door)
@@ -565,6 +605,12 @@ class MapDrawer(Map):
                     monster.center_x = x
                     monster.center_y = y
                     monster.adjust_center_y()
+                    if self.map[r][c] == 's':
+                        monster.hp = 1000
+                    elif self.map[r][c] == 'm':
+                        monster.hp = 2000
+                    else:
+                        monster.hp = 3000
                     return monster
 
     def restart(self):
@@ -682,10 +728,10 @@ class Status:
 
     def draw(self):
         self.end_time = time.time()
-        self.draw_time()
+        # self.draw_time()
         self.draw_hp_lvl()
         self.draw_weapon_lvl()
-        self.draw_key_number()
+        # self.draw_key_number()
         self.draw_super_magic_potion_number()
 
     def check_and_set_player_status(self, item):
