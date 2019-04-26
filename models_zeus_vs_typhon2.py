@@ -35,8 +35,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
 
         self.is_dead = False
 
-        self.current_hp_lvl = 3
-        self.current_weapon_lvl = 3
+        self.current_hp_lvl = 1
+        self.current_weapon_lvl = 1
         self.current_key = 0
         self.current_super_magic_potion = 0
 
@@ -71,8 +71,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.stand_left_textures.append(arcade.load_texture(filename, mirrored=True))
 
     def restart_statuses(self):
-        self.current_hp_lvl = 3
-        self.current_weapon_lvl = 3
+        self.current_hp_lvl = 1
+        self.current_weapon_lvl = 1
         self.current_key = 0
         self.current_super_magic_potion = 0
 
@@ -96,6 +96,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         """cal bullet damage and update status"""
         if 0 < self.current_hp_lvl:
             self.current_hp_lvl -= bullet.damage
+        elif self.current_hp_lvl == 0:
+            return
 
     def update_status(self):
         if self.current_hp_lvl == 0:
@@ -104,7 +106,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
     def attack(self):
         bullet = Bullet(self.bullet_pic)
         bullet.change_x = 5
-        bullet.damage = self.current_weapon_lvl * 100
+        # bullet.damage = self.current_weapon_lvl * 100
+        bullet.damage = 2000
         bullet.center_y = self.center_y
         if self.direction_x == DIR_LEFT:
             bullet.right = self.left
@@ -114,8 +117,8 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
             bullet.change_x = abs(bullet.change_x)
 
         bullet.first_center_x = bullet.center_x
-        bullet.distance *= self.current_weapon_lvl
-        # bullet.distance = 200
+        # bullet.distance *= self.current_weapon_lvl
+        bullet.distance = 200
         self.bullet_sprite_list.append(bullet)
 
 
@@ -145,9 +148,6 @@ class Monster(arcade.Sprite):
 
         self.bullet_pic = bullet_pic
         self.bullet_sprite_list = arcade.SpriteList()
-
-    def set_hp(self, hp):
-        self.hp = hp
 
     def adjust_center_y(self):
         # self.center_y += abs((self.center_y - self.bottom) - BLOCK_SIZE)
@@ -183,6 +183,8 @@ class Monster(arcade.Sprite):
         """cal bullet damage and update status"""
         if 0 < self.hp:
             self.hp -= bullet.damage
+            if self.hp == 0:
+                self.is_dead = True
 
     def draw_hp(self):
         arcade.draw_text(f"{self.hp}", self.left, self.top + 5, arcade.color.BLACK)
@@ -389,6 +391,10 @@ class MapDrawer(Map):
         self.magic_potion_pic = magic_potion_pic
         self.super_magic_potion_pic = super_magic_potion_pic
 
+        # monster pictures
+        self.monster_pic = monster_pic
+        self.monster_bullet_pic = monster_bullet_pic
+
         # set wall sprite list
         self.wall_sprite_list = arcade.SpriteList()
         self.init_wall_sprite_list(wall_pic)
@@ -409,7 +415,7 @@ class MapDrawer(Map):
         self.init_door_sprite_list(door_red_pic, door_green_pic)
 
         # init monster
-        self.monster = self.init_monster_sprite(monster_pic, monster_bullet_pic)
+        self.monster = self.init_monster_sprite(self.monster_pic, self.monster_bullet_pic)
 
         self.count_time = True
 
@@ -565,6 +571,7 @@ class MapDrawer(Map):
         self.items_sprite_list = arcade.SpriteList()
         self.init_item_sprite_list(self.key_pic, self.hp_potion_pic,
                                    self.magic_potion_pic, self.super_magic_potion_pic)
+        self.init_monster_sprite(self.monster_pic, self.monster_bullet_pic)
         # for item in self.collected_item_sprite_list:
         #     self.items_sprite_list.append(item)
         #     self.collected_item_sprite_list.remove(item)
