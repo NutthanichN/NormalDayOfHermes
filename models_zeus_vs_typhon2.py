@@ -161,7 +161,7 @@ class Monster(arcade.Sprite):
             if not p.is_ramp:
                 if p.center_y <= self.bottom <= p.top and p.left <= self.center_x <= p.right:
                     return True
-        print('not on platform')
+        # print('not on platform')
         return False
 
     def attack(self):
