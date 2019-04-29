@@ -81,9 +81,6 @@ class MainCharacter(arcade.AnimatedWalkingSprite):
         self.center_x = x
         self.center_y = y
 
-    def set_map(self, map):
-        self.map = map
-
     def restart(self):
         self.set_up_position()
         self.restart_statuses()
@@ -146,8 +143,6 @@ class Monster(arcade.Sprite):
         self.hp = 2000
         self.is_dead = False
 
-        self.move_time = 0
-
         self.change_x = self.MOVEMENT_VX
 
         self.bullet_pic = bullet_pic
@@ -161,6 +156,7 @@ class Monster(arcade.Sprite):
         return check_for_collision(player, self)
 
     def is_on_platform(self):
+        """check that monster is on platform or not"""
         for p in self.map.platform_sprite_list:
             if not p.is_ramp:
                 if p.center_y <= self.bottom <= p.top and p.left <= self.center_x <= p.right:
@@ -169,6 +165,7 @@ class Monster(arcade.Sprite):
         return False
 
     def attack(self):
+        """init bullet_sprite_list"""
         bullet = Bullet(self.bullet_pic)
         bullet.change_x = 7
         bullet.damage = 1
@@ -183,14 +180,11 @@ class Monster(arcade.Sprite):
 
         self.bullet_sprite_list.append(bullet)
 
-    def move_suddenly(self):
-        pass
-
     def calculate_damage(self, bullet):
         """cal bullet damage and update status"""
         if 0 < self.hp:
             self.hp -= bullet.damage
-            if self.hp == 0:
+            if self.hp <= 0:
                 self.is_dead = True
 
     def draw_hp(self):
@@ -207,11 +201,6 @@ class Monster(arcade.Sprite):
         else:
             self.set_texture(self.TEXTURE_RIGHT)
 
-        # if self.can_move_fast:
-        #     if randrange(100) == 0:
-        #         self.change_x = self.MAX_MOVEMENT_VX
-        #     else:
-        #         self.change_x = self.MOVEMENT_VX
         self.center_x += self.change_x
 
 
@@ -255,7 +244,6 @@ class Bullet(arcade.Sprite):
 
 
 class Platform(arcade.Sprite):
-    """add spacial variable to show that player can only hit at that direction"""
     TRAP_MARGIN = 5
 
     def __init__(self, filename):
@@ -530,8 +518,6 @@ class MapDrawer(Map):
                     sprite = Platform(trap_pic)
                     sprite.set_trap(left, right, top, bottom)
                     sprite.init_trap_center(x, y)
-                    # sprite.center_x = x
-                    # sprite.center_y = y
 
                     if trap_pic == pic_left or trap_pic == pic_right:
                         self.wall_sprite_list.append(sprite)
@@ -613,16 +599,6 @@ class MapDrawer(Map):
                         monster.hp = 3000
                     return monster
 
-    def restart(self):
-        self.items_sprite_list = arcade.SpriteList()
-        self.init_item_sprite_list(self.key_pic, self.hp_potion_pic,
-                                   self.magic_potion_pic, self.super_magic_potion_pic)
-        if self.monster is not None:
-            self.monster = self.init_monster_sprite(self.monster_pic, self.monster_bullet_pic)
-        # for item in self.collected_item_sprite_list:
-        #     self.items_sprite_list.append(item)
-        #     self.collected_item_sprite_list.remove(item)
-
 
 class Status:
     MAX_HP_LVL = 8
@@ -665,7 +641,7 @@ class Status:
         # sprite part
         # still use magic number
         x = self.screen_width - 220
-        y = self.screen_height - 30 - BLOCK_SIZE
+        y = self.screen_height - 30 - BLOCK_SIZE - 10
         for i in range(self.MAX_WEAPON_LVL):
             weapon = arcade.Sprite(self.weapon_lvl_pic)
             new_x = x + BLOCK_SIZE
@@ -693,7 +669,7 @@ class Status:
         # text part
         # still use magic number
         x = self.screen_width - 310
-        y = self.screen_height - 40 - BLOCK_SIZE
+        y = self.screen_height - 40 - BLOCK_SIZE - 10
         arcade.draw_text('Weapon lvl', x, y, arcade.color.BLACK, font_size=15)
 
         # current_weapon_lvl = arcade.SpriteList()
@@ -732,7 +708,7 @@ class Status:
         self.draw_hp_lvl()
         self.draw_weapon_lvl()
         # self.draw_key_number()
-        self.draw_super_magic_potion_number()
+        # self.draw_super_magic_potion_number()
 
     def check_and_set_player_status(self, item):
         if item.key:
@@ -745,3 +721,4 @@ class Status:
             self.player.current_super_magic_potion += 1
 
 # bug --> add magic after hp but it add both hp and magic // now solve
+# try to add spacial variable to show that player can only hit at that direction
