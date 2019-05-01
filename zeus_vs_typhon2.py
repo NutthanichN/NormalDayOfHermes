@@ -74,7 +74,7 @@ class CaveWindow(arcade.Window):
         arcade.set_background_color(arcade.color.SADDLE_BROWN)
 
         # init maps
-        self.maps = set_up_maps('map/map1_1.txt', 'map/map1_2.txt',
+        self.maps = set_up_maps('map/first_scene.txt', 'map/map1_1.txt', 'map/map1_2.txt',
                                 'map/map2_1.txt', 'map/map2_2.txt',
                                 'map/map3_1.txt', 'map/map3_2.txt',
                                 'map/end_scene.txt')
@@ -111,10 +111,10 @@ class CaveWindow(arcade.Window):
         self.physics_engines = my_physics.PhysicsEngine(player, current_map.wall_sprite_list,
                                                         current_map.platform_sprite_list, GRAVITY)
 
-    def change_map(self, next):
+    def change_map(self, forward):
         next_index = self.maps.index(self.current_map) + 1
         previous_index = self.maps.index(self.current_map) - 1
-        if next:
+        if forward:
             if next_index <= len(self.maps) - 1:
                 self.current_map = self.maps[next_index]
             else:
@@ -134,7 +134,7 @@ class CaveWindow(arcade.Window):
 
     def restart(self):
         self.game_end = False
-        self.maps = set_up_maps('map/map1_1.txt', 'map/map1_2.txt',
+        self.maps = set_up_maps('map/first_scene.txt', 'map/map1_1.txt', 'map/map1_2.txt',
                                 'map/map2_1.txt', 'map/map2_2.txt',
                                 'map/map3_1.txt', 'map/map3_2.txt',
                                 'map/end_scene.txt')
@@ -143,6 +143,36 @@ class CaveWindow(arcade.Window):
         self.hermes_sprite.set_up_position()
         self.set_up_physics_engines(self.hermes_sprite, self.current_map)
         self.hermes_sprite.restart()
+
+    def draw_game_over_text(self):
+        arcade.draw_text('Game Over', 320, SCREEN_HEIGHT // 2,
+                         arcade.color.BLACK, 50)
+        arcade.draw_text("Press [ENTER] to restart", 260, (SCREEN_HEIGHT // 2) - 50,
+                         arcade.color.BLACK, 30)
+
+    def draw_you_win_text(self):
+        arcade.draw_text('You win!!', 320, SCREEN_HEIGHT // 2,
+                         arcade.color.BLACK, 50)
+        arcade.draw_text("Press [ENTER] to restart", 260, (SCREEN_HEIGHT // 2) - 50,
+                         arcade.color.BLACK, 30)
+
+    def draw_instruction_text(self):
+        arcade.draw_text('How to play:', 100, SCREEN_HEIGHT - 200,
+                         arcade.color.BLACK, 25)
+        arcade.draw_text('Press [ < ] button to move left', 100, SCREEN_HEIGHT - 250,
+                         arcade.color.BLACK, 20)
+        arcade.draw_text('Press [ > ] button to move right', 100, SCREEN_HEIGHT - 300,
+                         arcade.color.BLACK, 20)
+        arcade.draw_text('Press [ ^ ] button to jump', 100, SCREEN_HEIGHT - 350,
+                         arcade.color.BLACK, 20)
+        arcade.draw_text('Press [SPACEBAR] to attack', 100, SCREEN_HEIGHT - 400,
+                         arcade.color.BLACK, 20)
+        arcade.draw_text('::: Press [ENTER] to start game :::', 140, SCREEN_HEIGHT - 550,
+                         arcade.color.BLACK, 25)
+
+    def draw_welcome_text(self):
+        arcade.draw_text('Normal Day of Hermes', 150, SCREEN_HEIGHT - 80,
+                         arcade.color.BLACK, 50)
 
     def update(self, delta):
         if not self.game_end:
@@ -158,8 +188,8 @@ class CaveWindow(arcade.Window):
                 # manage enter door
                 for door in self.current_map.door_sprite_list:
                     if door.has_player(self.hermes_sprite) and door.active:
-                        if door.is_last_door:
-                            self.game_end = True
+                        # if door.is_last_door:
+                        #     self.game_end = True
                         # print('Enter door')
                         self.change_map(True)
 
@@ -243,19 +273,19 @@ class CaveWindow(arcade.Window):
         # arcade.draw_text(text, 50, SCREEN_HEIGHT//2, arcade.color.RED, 16)
         # print(text)
 
-        self.status.draw()
+        if self.maps.index(self.current_map) == 0:
+            self.draw_welcome_text()
+            self.draw_instruction_text()
+        elif self.maps.index(self.current_map) > 0:
+            self.status.draw()
+            if self.current_map == self.maps[-1]:
+                self.draw_you_win_text()
 
         if self.hermes_sprite.is_dead:
-            arcade.draw_text('Game Over', 320, SCREEN_HEIGHT // 2,
-                             arcade.color.BLACK, 50)
-            arcade.draw_text("Press 'R' to restart", 323, (SCREEN_HEIGHT // 2) - 50,
-                             arcade.color.BLACK, 30)
+            self.draw_game_over_text()
 
-        if self.game_end:
-            arcade.draw_text('You win!!', 320, SCREEN_HEIGHT // 2,
-                             arcade.color.BLACK, 50)
-            arcade.draw_text("Press 'R' to restart", 323, (SCREEN_HEIGHT // 2) - 50,
-                             arcade.color.BLACK, 30)
+        # if self.game_end:
+        #     self.draw_you_win_text()
 
         if self.god_mode:
             arcade.draw_text('God mode', 25, SCREEN_HEIGHT - 20, arcade.color.BLACK, 12)
@@ -279,11 +309,19 @@ class CaveWindow(arcade.Window):
         if key == arcade.key.R:
             # print('Before:')
             # print('all items: ', list(self.current_map.items_sprite_list))
-            self.restart()
+            if self.god_mode:
+                self.restart()
             # self.current_map.restart()
             # print('After:')
             # print('all items: ', list(self.current_map.items_sprite_list))
             # print('========================================================================')
+
+        if key == arcade.key.ENTER:
+            if self.maps.index(self.current_map) == 0:
+                self.change_map(True)
+            else:
+                if self.god_mode or self.game_end or self.hermes_sprite.is_dead:
+                    self.restart()
 
         if key == arcade.key.X:
             if self.god_mode:
