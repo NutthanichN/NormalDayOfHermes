@@ -4,7 +4,6 @@ import arcade
 from models_zeus_vs_typhon2 import MainCharacter, MapDrawer, Status
 import my_physics
 from pyglet import clock
-import my_physics2
 from random import randrange
 import time
 
@@ -95,9 +94,6 @@ class CaveWindow(arcade.Window):
         self.physics_engines = None
         self.set_up_physics_engines(self.hermes_sprite, self.current_map)
 
-        # self.physics_engines = my_physics2.PhysicsEngine(self.hermes_sprite, self.current_map.wall_sprite_list,
-        #                                                  self.current_map.platform_sprite_list, GRAVITY)
-
         # init status(drawer)
         self.status = Status(SCREEN_WIDTH, SCREEN_HEIGHT, self.hermes_sprite, self.current_map,
                              'images/hp_lvl_20.png', 'images/weapon_lvl_20.png', 'images/key_18x19.PNG')
@@ -147,13 +143,13 @@ class CaveWindow(arcade.Window):
     def draw_game_over_text(self):
         arcade.draw_text('Game Over', 320, SCREEN_HEIGHT // 2,
                          arcade.color.BLACK, 50)
-        arcade.draw_text("Press [ENTER] to restart", 260, (SCREEN_HEIGHT // 2) - 50,
+        arcade.draw_text("Press [ENTER] to restart", 280, (SCREEN_HEIGHT // 2) - 50,
                          arcade.color.BLACK, 30)
 
     def draw_you_win_text(self):
         arcade.draw_text('You win!!', 320, SCREEN_HEIGHT // 2,
                          arcade.color.BLACK, 50)
-        arcade.draw_text("Press [ENTER] to restart", 260, (SCREEN_HEIGHT // 2) - 50,
+        arcade.draw_text("Press [ENTER] to restart", 280, (SCREEN_HEIGHT // 2) - 50,
                          arcade.color.BLACK, 30)
 
     def draw_instruction_text(self):
